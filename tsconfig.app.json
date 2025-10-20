@@ -21,7 +21,17 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* === Alias === */
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["src/*"],
+      "@/*": ["src/*"]
+    },
+
+    /* Types */
+    "types": ["vite/client"]
   },
   "include": ["src"]
 }
