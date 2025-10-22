@@ -109,13 +109,9 @@ export default function GuidePage() {
         </section>
 
         <aside className="flex flex-col gap-4">
-          <DailyMissionsCard
-            missions={[
-              { id: "xp10", title: "Complete 5 testes", icon: "xp", current: 5, goal: 5 },
-              { id: "veg2", title: "Realize testes de Vegetação", icon: "bonus", current: 2, goal: 5 },
-              { id: "north7", title: "Visite territórios do Norte", icon: "time", current: 0, goal: 7 },
-            ]}
-          />
+{/* antes passava missions=[] */}
+<DailyMissionsCard />
+
           <TipCard
             text={`No Amazonas a floresta libera tanta umidade que forma os “rios voadores”, responsáveis por levar chuva para outras regiões do Brasil!`}
             chipLabel="CURIOSIDADE"

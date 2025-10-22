@@ -18,11 +18,16 @@ import {
   resetPhaseProgress,
 } from "#/modules/guide/services/quizService";
 
+// ✅ Toast de sucesso com ícone opcional
+import SuccessToast from "#/components/toasts/SuccessToast";
+// ✅ Resolver ícone da conquista pelo nome (pasta assets/achievements)
+import { resolveAchievementIcon } from "#/modules/guide/utils/resolveAchievementIcon";
+
 // Mascotes
 import ThinkImg from "#/modules/guide/assets/quiz/1 - think.png";
 import SadImg from "#/modules/guide/assets/quiz/2 - sad.png";
 import HappyImg from "#/modules/guide/assets/quiz/3 - happy.png";
-// Imagem central
+// Imagem central (também usamos como fallback para ícone de conquista)
 import ImgCenter from "#/modules/guide/assets/quiz/4 - ImgCenter.png";
 
 // Fallbacks
@@ -30,6 +35,7 @@ import Phase1Icon from "#/modules/guide/assets/phases/1.png";
 import Phase2Icon from "#/modules/guide/assets/phases/2.png";
 import Phase3Icon from "#/modules/guide/assets/phases/3.png";
 import Phase4Icon from "#/modules/guide/assets/phases/4.png";
+import { toast } from "react-toastify";
 
 type LocationState = {
   phaseLabel?: string;
@@ -192,6 +198,21 @@ export default function GuideQuizPage() {
         questionId: currentQuestion.id,
         selectedAlternativeId: selectedAltId,
       });
+
+      // ✅ Se houver conquistas desbloqueadas, dispara um toast para cada uma
+      if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
+        res.unlockedAchievements.forEach((achName) => {
+          const iconUrl = resolveAchievementIcon(achName, ImgCenter);
+          toast(
+            <SuccessToast
+              title="Parabéns!"
+              description={`Você desbloqueou a conquista "${achName}"`}
+              iconSrc={iconUrl}
+            />
+          );
+        });
+      }
+
       const ok = Boolean(res.correct);
       setIsCorrect(ok);
       setMode("feedback");
