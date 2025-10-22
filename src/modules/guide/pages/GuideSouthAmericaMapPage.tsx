@@ -1,4 +1,3 @@
-// src/modules/guide/pages/GuideSouthAmericaMapPage.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import type { LngLatBoundsLike } from "mapbox-gl";
@@ -20,13 +19,14 @@ import {
   spawnPhaseButtonsForState,
 } from "#/modules/guide/components/map/phases/spawnPhases";
 
-import { STATE_ID_BY_CODE } from "#/modules/guide/components/map/constants/northBackend";
+import {
+  ensureNorthIdsLoaded,
+  getStateIdByLocal,
+} from "#/modules/guide/components/map/constants/northBackend";
 
-// Services
 import { getMissionsByStateId } from "#/modules/guide/services/regionsService";
 import { getPhaseProgress, resetPhaseProgress } from "#/modules/guide/services/quizService";
 
-// Ícones das fases
 import Phase1Icon from "#/modules/guide/assets/phases/1.png";
 import Phase2Icon from "#/modules/guide/assets/phases/2.png";
 import Phase3Icon from "#/modules/guide/assets/phases/3.png";
@@ -152,7 +152,7 @@ export default function GuideSouthAmericaMapPage() {
 
   // ---- mapeamentos/ids ----
   function getBackendStateId(stateCode: RegionNorthStateId): string | null {
-    return STATE_ID_BY_CODE[stateCode] ?? null;
+    return getStateIdByLocal(stateCode as any) ?? null;
   }
 
   function resolveMissionId(stateCode: RegionNorthStateId, index1to4: number): string | null {
@@ -218,7 +218,6 @@ export default function GuideSouthAmericaMapPage() {
     try {
       const progress = await getPhaseProgress(missionId);
       if (progress?.passed) {
-        // Rejogar: reset para marcar como incorretas/completed=false (mantém passed=true)
         await resetPhaseProgress(missionId);
       }
     } catch (e) {
@@ -397,70 +396,72 @@ export default function GuideSouthAmericaMapPage() {
 
   // ---- mount/unmount do mapa ----
   useEffect(() => {
-    if (!mapRef.current) return;
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
+    (async () => {
+      // garante que os IDs da região/estados foram descobertos
+      await ensureNorthIdsLoaded();
 
-    const m = new mapboxgl.Map({
-      container: mapRef.current,
-      style: `mapbox://styles/${import.meta.env.VITE_MAPBOX_STYLE}`,
-      center: [-51.9253, -14.235],
-      zoom: 3.5,
-      cooperativeGestures: true,
-      renderWorldCopies: false,
-      maxBounds: hardBounds,
-    });
+      if (!mapRef.current) return;
+      mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
-    m.addControl(new mapboxgl.NavigationControl({ visualizePitch: false }), "top-right");
-    backCtrl.current = new BackControl(handleBackClick);
-    m.addControl(backCtrl.current as any, "top-left");
-    stageBadge.current = new StageBadgeControl();
-    m.addControl(stageBadge.current as any, "bottom-left");
+      const m = new mapboxgl.Map({
+        container: mapRef.current,
+        style: `mapbox://styles/${import.meta.env.VITE_MAPBOX_STYLE}`,
+        center: [-51.9253, -14.235],
+        zoom: 3.5,
+        cooperativeGestures: true,
+        renderWorldCopies: false,
+        maxBounds: hardBounds,
+      });
 
-    const onDragEnd = () => {
-      if (!m || levelRef.current !== "country") return;
-      const center = m.getCenter();
-      const soft = new mapboxgl.LngLatBounds(softBoundsPair);
-      if (!soft.contains(center)) {
-        m.fitBounds(toPair(brasilBounds), { padding: 24, duration: 600, pitch: 0, bearing: 0 });
-      }
-    };
-    m.on("dragend", onDragEnd);
+      m.addControl(new mapboxgl.NavigationControl({ visualizePitch: false }), "top-right");
+      backCtrl.current = new BackControl(handleBackClick);
+      m.addControl(backCtrl.current as any, "top-left");
+      stageBadge.current = new StageBadgeControl();
+      m.addControl(stageBadge.current as any, "bottom-left");
 
-    m.once("load", () => {
-      // 🔗 Deep link do /guide vindo do quiz:
-      const deep = location.state?.deepLink as
-        | { level?: "state" | "region"; stateCode?: string }
-        | undefined;
+      const onDragEnd = () => {
+        if (!m || levelRef.current !== "country") return;
+        const center = m.getCenter();
+        const soft = new mapboxgl.LngLatBounds(softBoundsPair);
+        if (!soft.contains(center)) {
+          m.fitBounds(toPair(brasilBounds), { padding: 24, duration: 600, pitch: 0, bearing: 0 });
+        }
+      };
+      m.on("dragend", onDragEnd);
 
-      const isValidState = (code: any): code is RegionNorthStateId =>
-        typeof code === "string" && code in northRegion.states;
+      m.once("load", () => {
+        const deep = (location.state as any)?.deepLink as
+          | { level?: "state" | "region"; stateCode?: string }
+          | undefined;
 
-      if (deep?.level === "state" && isValidState(deep.stateCode)) {
-        // abre direto no estado solicitado
-        goToState(deep.stateCode);
-      } else if (deep?.level === "region") {
-        goToRegionNorte();
-      } else {
-        // comportamento padrão (país)
-        m.fitBounds(toPair(brasilBounds), { padding: 24, duration: 650 });
-        applyGesturesFor("country");
-        stageBadge.current?.update({ variant: "country", subtitle: "América do Sul", title: "Mapa do Brasil" });
-        backCtrl.current?.setVisible(false);
-        m.once("moveend", () => requestAnimationFrame(() => showRegionChip(true)));
-      }
-    });
+        const isValidState = (code: any): code is RegionNorthStateId =>
+          typeof code === "string" && code in northRegion.states;
 
-    map.current = m;
-    return () => {
-      m.off("dragend", onDragEnd);
-      hidePhasesDashedPath(m);
-      clearPhaseButtons(phaseMarkersRef);
-      clearStateChips();
-      chipRegionMarker.current?.remove();
-      chipRegionMarker.current = null;
-      map.current = null;
-      m.remove();
-    };
+        if (deep?.level === "state" && isValidState(deep.stateCode)) {
+          goToState(deep.stateCode);
+        } else if (deep?.level === "region") {
+          goToRegionNorte();
+        } else {
+          m.fitBounds(toPair(brasilBounds), { padding: 24, duration: 650 });
+          applyGesturesFor("country");
+          stageBadge.current?.update({ variant: "country", subtitle: "América do Sul", title: "Mapa do Brasil" });
+          backCtrl.current?.setVisible(false);
+          m.once("moveend", () => requestAnimationFrame(() => showRegionChip(true)));
+        }
+      });
+
+      map.current = m;
+      return () => {
+        m.off("dragend", onDragEnd);
+        hidePhasesDashedPath(m);
+        clearPhaseButtons(phaseMarkersRef);
+        clearStateChips();
+        chipRegionMarker.current?.remove();
+        chipRegionMarker.current = null;
+        map.current = null;
+        m.remove();
+      };
+    })();
   }, [location.state]);
 
   useEffect(() => {
