@@ -1,5 +1,5 @@
 // src/modules/guide/pages/GuideQuizPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import GuideQuizNavbar from "#/modules/guide/components/quiz/GuideQuizNavbar";
@@ -18,19 +18,14 @@ import {
   resetPhaseProgress,
 } from "#/modules/guide/services/quizService";
 
-// ✅ Toast de sucesso com ícone opcional
 import SuccessToast from "#/components/toasts/SuccessToast";
-// ✅ Resolver ícone da conquista pelo nome (pasta assets/achievements)
 import { resolveAchievementIcon } from "#/modules/guide/utils/resolveAchievementIcon";
 
-// Mascotes
 import ThinkImg from "#/modules/guide/assets/quiz/1 - think.png";
 import SadImg from "#/modules/guide/assets/quiz/2 - sad.png";
 import HappyImg from "#/modules/guide/assets/quiz/3 - happy.png";
-// Imagem central (também usamos como fallback para ícone de conquista)
 import ImgCenter from "#/modules/guide/assets/quiz/4 - ImgCenter.png";
 
-// Fallbacks
 import Phase1Icon from "#/modules/guide/assets/phases/1.png";
 import Phase2Icon from "#/modules/guide/assets/phases/2.png";
 import Phase3Icon from "#/modules/guide/assets/phases/3.png";
@@ -56,7 +51,6 @@ const DEFAULT_ICONS: Record<1 | 2 | 3 | 4, string> = {
   3: Phase3Icon,
   4: Phase4Icon,
 };
-// mesma paleta usada no mapa
 const COLOR_BY_INDEX: Record<1 | 2 | 3 | 4, "green" | "blue" | "coral" | "yellow"> = {
   1: "green",
   2: "blue",
@@ -66,7 +60,6 @@ const COLOR_BY_INDEX: Record<1 | 2 | 3 | 4, "green" | "blue" | "coral" | "yellow
 
 type Mascot = "think" | "happy" | "sad";
 
-// estrutura mínima que usamos do /progress
 type PhaseProgress = {
   phaseName?: string;
   completed: boolean;
@@ -112,9 +105,14 @@ export default function GuideQuizPage() {
   const [questions, setQuestions] =
     useState<Awaited<ReturnType<typeof getPhaseQuiz>>["questions"]>([]);
 
-  // progresso atual (para resultado e card)
   const [progressState, setProgressState] = useState<PhaseProgress | null>(null);
   const [finished, setFinished] = useState(false);
+
+  // ====== Intersticial "vamos nas erradas" ======
+  const [showWrongIntro, setShowWrongIntro] = useState(false);
+  const wrongIntroShownRef = useRef(false); // garante que aparece uma única vez
+  const initialWrongSetRef = useRef<Set<string>>(new Set()); // erradas vindas do backend
+  const wrongIdsSessionRef = useRef<Set<string>>(new Set()); // erradas nesta jogada
 
   const currentQuestion = useMemo(() => {
     if (!questions.length || !queue.length) return null;
@@ -155,18 +153,37 @@ export default function GuideQuizPage() {
         const allIdx = Array.from({ length: total }, (_, i) => i);
         const correctSet = new Set<string>(pg.correctQuestionIds);
         const wrongSet = new Set<string>(pg.wrongQuestionIds);
+        initialWrongSetRef.current = wrongSet;
+        wrongIdsSessionRef.current.clear();
+        wrongIntroShownRef.current = false;
 
         const pendingIdx = allIdx.filter((i) => !correctSet.has(quiz.questions[i].id));
         const notTried = pendingIdx.filter((i) => !wrongSet.has(quiz.questions[i].id));
         const previouslyWrong = pendingIdx.filter((i) => wrongSet.has(quiz.questions[i].id));
         const ordered = [...notTried, ...previouslyWrong];
 
+        const wrongIntroNeeded = !pg.completed && !pg.passed; // só na primeira vez da fase
+
         if (pg.completed || ordered.length === 0) {
           setQueue([]);
           setFinished(true);
+          setShowWrongIntro(false);
         } else {
           setQueue(ordered);
           setFinished(false);
+
+          // Se começarmos já nas erradas, mostra intro imediatamente (uma vez)
+          if (
+            wrongIntroNeeded &&
+            previouslyWrong.length > 0 &&
+            ordered.length > 0 &&
+            wrongSet.has(quiz.questions[ordered[0]].id)
+          ) {
+            setShowWrongIntro(true);
+            wrongIntroShownRef.current = true;
+          } else {
+            setShowWrongIntro(false);
+          }
         }
 
         setQIndex(0);
@@ -187,19 +204,18 @@ export default function GuideQuizPage() {
 
   // Ações
   const handleSelect = (altId: string) => {
-    if (mode !== "answering" || finished) return;
+    if (mode !== "answering" || finished || showWrongIntro) return;
     setSelectedAltId(altId);
   };
 
   const handleVerify = async () => {
-    if (!currentQuestion || !selectedAltId || finished) return;
+    if (!currentQuestion || !selectedAltId || finished || showWrongIntro) return;
     try {
       const res = await submitAnswer({
         questionId: currentQuestion.id,
         selectedAlternativeId: selectedAltId,
       });
 
-      // ✅ Se houver conquistas desbloqueadas, dispara um toast para cada uma
       if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
         res.unlockedAchievements.forEach((achName) => {
           const iconUrl = resolveAchievementIcon(achName, ImgCenter);
@@ -217,12 +233,17 @@ export default function GuideQuizPage() {
       setIsCorrect(ok);
       setMode("feedback");
       setMascot(ok ? "happy" : "sad");
+
+      // Guarda no set de erradas desta sessão
+      if (!ok && currentQuestion) {
+        wrongIdsSessionRef.current.add(currentQuestion.id);
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Revalida progresso para preencher o card final (server) quando terminar
+  // Revalida progresso (server) ao finalizar
   const refetchProgressForResult = async () => {
     if (!missionId) return;
     try {
@@ -244,27 +265,20 @@ export default function GuideQuizPage() {
     }
   };
 
-  // Avança após o feedback
+  // Avança após feedback
   const goNextQuestion = () => {
     if (finished) return;
     if (!queue.length) return;
 
-    // atualização otimista do progresso para o card
+    // otimista para o card
     if (isCorrect) {
-      setProgressState((prev) => {
-        if (!prev) return prev;
-        const nextRemaining = Math.max(0, (prev.remaining ?? 0) - 1);
-        return {
-          ...prev,
-          remaining: nextRemaining,
-          correctAnswers: (prev.correctAnswers ?? 0) + 1,
-        };
-      });
+      setProgressState((prev) =>
+        prev
+          ? { ...prev, remaining: Math.max(0, (prev.remaining ?? 0) - 1), correctAnswers: (prev.correctAnswers ?? 0) + 1 }
+          : prev
+      );
     } else if (isCorrect === false) {
-      setProgressState((prev) => {
-        if (!prev) return prev;
-        return { ...prev, wrongAnswers: (prev.wrongAnswers ?? 0) + 1 };
-      });
+      setProgressState((prev) => (prev ? { ...prev, wrongAnswers: (prev.wrongAnswers ?? 0) + 1 } : prev));
     }
 
     setQueue((prev) => {
@@ -281,6 +295,20 @@ export default function GuideQuizPage() {
         prev.length && refetchProgressForResult();
       } else {
         const nextIdx = Math.min(qIndex, nextQueue.length - 1);
+
+        // >>> Detecta transição para bloco de erradas e abre o intersticial uma vez
+        const wrongIntroNeeded = !(progressState?.completed || progressState?.passed);
+        if (wrongIntroNeeded && !wrongIntroShownRef.current) {
+          const nextId = questions[nextQueue[nextIdx]]?.id;
+          if (
+            nextId &&
+            (initialWrongSetRef.current.has(nextId) || wrongIdsSessionRef.current.has(nextId))
+          ) {
+            setShowWrongIntro(true);
+            wrongIntroShownRef.current = true;
+          }
+        }
+
         setQIndex(nextIdx);
       }
 
@@ -294,7 +322,7 @@ export default function GuideQuizPage() {
   };
 
   const handleSkip = () => {
-    if (finished) return;
+    if (finished || showWrongIntro) return;
     if (queue.length <= 1) {
       setQIndex(0);
       setSelectedAltId(null);
@@ -308,6 +336,20 @@ export default function GuideQuizPage() {
       const rest = arr.filter((_, i) => i !== qIndex);
       const next = [...rest, absolute];
       const nextIdx = Math.min(qIndex, next.length - 1);
+
+      // Se o próximo já é do bloco de erradas e ainda não mostramos a intro
+      const wrongIntroNeeded = !(progressState?.completed || progressState?.passed);
+      const nextId = questions[next[nextIdx]]?.id;
+      if (
+        wrongIntroNeeded &&
+        !wrongIntroShownRef.current &&
+        nextId &&
+        (initialWrongSetRef.current.has(nextId) || wrongIdsSessionRef.current.has(nextId))
+      ) {
+        setShowWrongIntro(true);
+        wrongIntroShownRef.current = true;
+      }
+
       setQIndex(nextIdx);
       return next;
     });
@@ -317,7 +359,6 @@ export default function GuideQuizPage() {
     setMascot("think");
   };
 
-  // Estados visuais das alternativas
   const altState = (altId: string): "idle" | "selected" | "right" | "wrong" | "disabled" => {
     if (mode === "answering") return selectedAltId === altId ? "selected" : "idle";
     if (!currentQuestion) return "idle";
@@ -327,19 +368,16 @@ export default function GuideQuizPage() {
     return "idle";
   };
 
-  // Dados para o feedback textual (footer)
   const correctAlt = currentQuestion?.alternatives.find((a) => a.correct);
   const correctIdx =
     correctAlt ? currentQuestion?.alternatives.findIndex((a) => a.id === correctAlt.id) ?? 0 : 0;
   const correctLetter = (["A", "B", "C", "D"][correctIdx] ?? "A") as "A" | "B" | "C" | "D";
   const correctText = correctAlt?.optionText ?? "";
 
-  // Título dinâmico do modal
   const confirmTitle = finished
     ? "Sair do quiz?"
     : "Você está prestes a perder seu progresso desta fase. Deseja sair mesmo assim?";
 
-  // ====== Dados para o OverallProgressCard (current = goal - remaining) ======
   const goal = useMemo(() => (questions?.length ?? 10) || 10, [questions]);
   const progressCurrent = useMemo(() => {
     const rem = progressState?.remaining;
@@ -348,12 +386,8 @@ export default function GuideQuizPage() {
     return v < 0 ? 0 : v > goal ? goal : v;
   }, [goal, progressState?.remaining]);
 
-  // ====== Actions dos botões do resultado ======
   const handleGoToMenu = () => {
-    // 👉 Deep link para abrir o mapa já no nível do estado atual
-    navigate("/guide", {
-      state: { deepLink: { level: "state", stateCode } },
-    });
+    navigate("/guide", { state: { deepLink: { level: "state", stateCode } } });
   };
 
   const handleGoToNextPhase = () => {
@@ -362,8 +396,6 @@ export default function GuideQuizPage() {
       navigate("/guide", { state: { deepLink: { level: "state", stateCode } } });
       return;
     }
-
-    // calcula metadados da PRÓXIMA fase (2->3, 3->4, etc.)
     const nextIdx = (Math.min(4, Math.max(1, (index as number) + 1)) as 1 | 2 | 3 | 4);
     navigate(`/guide/quiz/${stateCode}/${nextId}`, {
       state: {
@@ -398,6 +430,24 @@ export default function GuideQuizPage() {
                 onMenu={handleGoToMenu}
                 onNext={handleGoToNextPhase}
               />
+            </div>
+          ) : showWrongIntro ? (
+            // ===== Intersticial das erradas =====
+            <div className="flex flex-1 items-center justify-center">
+              <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-[#FFFDEB] p-8 text-center shadow">
+                <h3 className="mb-2 text-2xl font-extrabold text-[#69521a]">
+                  Agora vamos tentar as erradas novamente!
+                </h3>
+                <p className="mb-6 text-[#6b5a2a]">
+                  Você concluiu as perguntas novas. Bora revisar as que ficaram pendentes?
+                </p>
+                <button
+                  onClick={() => setShowWrongIntro(false)}
+                  className="rounded-xl px-6 py-3 font-semibold text-white bg-[#8aa33f] active:scale-[0.99] transition"
+                >
+                  Vamos lá!
+                </button>
+              </div>
             </div>
           ) : !currentQuestion ? (
             <div className="grid h-[300px] place-items-center text-[#6b5a2a]">Carregando…</div>
@@ -450,12 +500,7 @@ export default function GuideQuizPage() {
         </section>
 
         <aside className="flex flex-col gap-4">
-          <OverallProgressCard
-            current={progressCurrent}
-            goal={goal}
-            accent="#9db668"
-            cardBg="#FFFDE1"
-          />
+          <OverallProgressCard current={progressCurrent} goal={goal} accent="#9db668" cardBg="#FFFDE1" />
           <TipCard
             text={`No Amazonas a floresta libera tanta umidade que forma os “rios voadores”, responsáveis por levar chuva para outras regiões do Brasil!`}
             chipLabel="CURIOSIDADE"
@@ -480,10 +525,7 @@ export default function GuideQuizPage() {
           } finally {
             setLeaving(false);
             setConfirmLeaveOpen(false);
-            // 👉 Deep link para reabrir o /guide já no estado atual
-            navigate("/guide", {
-              state: { deepLink: { level: "state", stateCode } },
-            });
+            navigate("/guide", { state: { deepLink: { level: "state", stateCode } } });
           }
         }}
       />

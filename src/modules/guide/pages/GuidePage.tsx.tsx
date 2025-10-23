@@ -5,6 +5,7 @@ import GuideNavbar from "../components/GuideNavbar";
 import DailyMissionsCard from "#/components/DailyMissionsCard";
 import TipCard from "#/components/TipCard";
 import ProfileModal from "../components/ProfileModal";
+import PromotionCard from "../components/patents/PromotionCard";
 
 type TabKey = "map" | "ranking" | "achievements" | "patents";
 
@@ -38,13 +39,11 @@ export default function GuidePage() {
     setProfileOpen(false);
   }, [disableClose]);
 
-  // Helpers de cookie
   function getCookie(name: string): string | null {
     const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
     return match ? decodeURIComponent(match[2]) : null;
   }
 
-  // Checa state e cookie na montagem -> abre modal em modo forçado se preciso
   useEffect(() => {
     const fromState = Boolean((location.state as any)?.requireAdditionalData === true);
     const fromCookie = getCookie("insertAdditionalDataRequired") === "1";
@@ -56,26 +55,22 @@ export default function GuidePage() {
       setProfileOpen(true);
     }
 
-    // Limpa apenas o state de navegação (para não “vazar” no histórico)
     if (fromState) {
       const url = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       window.history.replaceState({}, "", url);
     }
-    // IMPORTANTE: NÃO apagar o cookie aqui. Ele só será removido após salvar no ProfileModal.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-  const onCompleted = () => {
-    setDisableClose(false);
-    setForceEditMode(false);
-  };
-  window.addEventListener("additional-data-completed", onCompleted);
-  return () => window.removeEventListener("additional-data-completed", onCompleted);
-}, []);
+    const onCompleted = () => {
+      setDisableClose(false);
+      setForceEditMode(false);
+    };
+    window.addEventListener("additional-data-completed", onCompleted);
+    return () => window.removeEventListener("additional-data-completed", onCompleted);
+  }, []);
 
-
-  // Redundância: ainda escuta open-profile-edit (acionamentos in-app)
   useEffect(() => {
     const handler = (e: Event) => {
       const custom = e as CustomEvent<{ requireAdditionalData?: boolean }>;
@@ -88,16 +83,15 @@ export default function GuidePage() {
     return () => window.removeEventListener("open-profile-edit", handler as EventListener);
   }, []);
 
-  // Ouve quando o ProfileModal confirmar que os dados adicionais foram completados
   useEffect(() => {
     const onCompleted = () => {
       setDisableClose(false);
       setForceEditMode(false);
-      // deixa o modal aberto; o usuário pode fechar normalmente agora
     };
     window.addEventListener("additional-data-completed", onCompleted);
     return () => window.removeEventListener("additional-data-completed", onCompleted);
   }, []);
+
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FFFFE0] text-slate-100">
@@ -109,13 +103,15 @@ export default function GuidePage() {
         </section>
 
         <aside className="flex flex-col gap-4">
-{/* antes passava missions=[] */}
-<DailyMissionsCard />
+          {/* TipCard está presente em todas as guias */}
+<TipCard/>
 
-          <TipCard
-            text={`No Amazonas a floresta libera tanta umidade que forma os “rios voadores”, responsáveis por levar chuva para outras regiões do Brasil!`}
-            chipLabel="CURIOSIDADE"
-          />
+          {/* Alterna conforme a aba */}
+          {active === "patents" ? (
+            <PromotionCard />
+          ) : (
+            <DailyMissionsCard />
+          )}
         </aside>
       </main>
 
