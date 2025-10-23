@@ -1,3 +1,4 @@
+// src/modules/guide/pages/GuideSouthAmericaMapPage.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import type { LngLatBoundsLike } from "mapbox-gl";
@@ -24,13 +25,18 @@ import {
   getStateIdByLocal,
 } from "#/modules/guide/components/map/constants/northBackend";
 
+// Services
 import { getMissionsByStateId } from "#/modules/guide/services/regionsService";
 import { getPhaseProgress, resetPhaseProgress } from "#/modules/guide/services/quizService";
 
+// Ícones das fases
 import Phase1Icon from "#/modules/guide/assets/phases/1.png";
 import Phase2Icon from "#/modules/guide/assets/phases/2.png";
 import Phase3Icon from "#/modules/guide/assets/phases/3.png";
 import Phase4Icon from "#/modules/guide/assets/phases/4.png";
+
+// 🔒 Ícone de bloqueio para as outras regiões
+import LockImg from "#/modules/guide/assets/achievements/0 - Bloqueio.png";
 
 type Level = "country" | "region" | "state";
 
@@ -72,6 +78,9 @@ export default function GuideSouthAmericaMapPage() {
   const phaseMarkersRef = useRef<mapboxgl.Marker[]>([]);
   const backCtrl = useRef<BackControl | null>(null);
   const stageBadge = useRef<StageBadgeControl | null>(null);
+
+  // 🔒 marcadores de bloqueio das outras regiões
+  const lockMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   const missionsByStateRef = useRef<Record<string, Mission[]>>({});
   const [level, setLevel] = useState<Level>("country");
@@ -164,7 +173,8 @@ export default function GuideSouthAmericaMapPage() {
     if (byIndex) return byIndex.id;
 
     const wantedTitle = PHASE_TITLES[index1to4];
-    const norm = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+    const norm = (s: string) =>
+      s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
     const aliases: Record<number, string[]> = {
       1: ["localizacao e capital"],
       2: ["cultura e sociedade"],
@@ -244,16 +254,27 @@ export default function GuideSouthAmericaMapPage() {
 
     setLevel("country");
     setActiveState(null);
-    stageBadge.current?.update({ variant: "country", subtitle: "América do Sul", title: "Mapa do Brasil" });
+    stageBadge.current?.update({
+      variant: "country",
+      subtitle: "América do Sul",
+      title: "Mapa do Brasil",
+    });
 
     showRegionChip(false);
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
 
+    // prepara os locks (mostraremos ao final do movimento)
+    ensureLockMarkers();
+    showLockMarkers(false);
+
     map.current.fitBounds(toPair(brasilBounds), { padding: 24, duration: 700, pitch: 0, bearing: 0 });
     applyGesturesFor("country");
 
-    showAfterMoveEnd(() => showRegionChip(true));
+    showAfterMoveEnd(() => {
+      showRegionChip(true);
+      showLockMarkers(true);
+    });
   }
 
   function goToRegionNorte() {
@@ -262,9 +283,14 @@ export default function GuideSouthAmericaMapPage() {
 
     setLevel("region");
     setActiveState(null);
-    stageBadge.current?.update({ variant: "region", subtitle: "Brasil", title: "Mapa da Região Norte" });
+    stageBadge.current?.update({
+      variant: "region",
+      subtitle: "Brasil",
+      title: "Mapa da Região Norte",
+    });
 
     showRegionChip(false);
+    showLockMarkers(false); // some ao entrar em região
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
 
@@ -281,8 +307,13 @@ export default function GuideSouthAmericaMapPage() {
     setLevel("state");
     setActiveState(stateId);
     const state = northRegion.states[stateId];
-    stageBadge.current?.update({ variant: "state", subtitle: "Região Norte do Brasil", title: `Mapa do ${state.label}` });
+    stageBadge.current?.update({
+      variant: "state",
+      subtitle: "Região Norte do Brasil",
+      title: `Mapa do ${state.label}`,
+    });
 
+    showLockMarkers(false); // some ao entrar em estado
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
     hidePhasesDashedPath(map.current!);
@@ -354,7 +385,7 @@ export default function GuideSouthAmericaMapPage() {
     else if (cur === "region") goToCountry();
   }
 
-  // ---- chips de UI ----
+  // ---- chips de UI (NORTE) ----
   function showRegionChip(visible: boolean) {
     if (!map.current) return;
     if (!chipRegionMarker.current) {
@@ -369,6 +400,61 @@ export default function GuideSouthAmericaMapPage() {
     }
     (chipRegionMarker.current.getElement() as HTMLElement).style.display = visible ? "flex" : "none";
   }
+
+  // ---- marcadores de bloqueio (outras regiões) ----
+  // centros aproximados das regiões: Nordeste, Centro-Oeste, Sudeste, Sul
+  const OTHER_REGIONS_LOCKS: Array<{ id: "NE" | "CO" | "SE" | "S"; center: [number, number] }> = [
+    { id: "NE", center: [-42.0, -8.0] },   // Nordeste
+    { id: "CO", center: [-53.5, -17.0] },  // Centro-Oeste
+    { id: "SE", center: [-47.0, -20.5] },  // Sudeste
+    { id: "S",  center: [-51.5, -27.5] },  // Sul
+  ];
+
+  function ensureLockMarkers() {
+    if (!map.current) return;
+    if (lockMarkersRef.current.length) return; // já criados
+    OTHER_REGIONS_LOCKS.forEach((r) => {
+      const el = document.createElement("div");
+      el.style.display = "grid";
+      el.style.placeItems = "center";
+      el.style.width = "64px";
+      el.style.height = "64px";
+      el.style.borderRadius = "50%";
+      el.style.background = "#00000011";
+      el.style.backdropFilter = "blur(1px)";
+      el.style.boxShadow = "0 4px 10px rgba(0,0,0,.15)";
+
+      const img = document.createElement("img");
+      img.src = LockImg;
+      img.alt = "Região bloqueada";
+      img.draggable = false;
+      img.style.width = "44px";
+      img.style.height = "44px";
+      img.style.objectFit = "contain";
+      el.appendChild(img);
+
+      const mk = new mapboxgl.Marker({ element: el, anchor: "center" })
+        .setLngLat(r.center)
+        .addTo(map.current!);
+
+      // não clicável
+      (mk.getElement() as HTMLElement).style.pointerEvents = "none";
+
+      lockMarkersRef.current.push(mk);
+    });
+  }
+
+  function showLockMarkers(visible: boolean) {
+    lockMarkersRef.current.forEach((m) => {
+      (m.getElement() as HTMLElement).style.display = visible ? "grid" : "none";
+    });
+  }
+
+  function clearLockMarkers() {
+    lockMarkersRef.current.forEach((m) => m.remove());
+    lockMarkersRef.current = [];
+  }
+
   function clearStateChips() {
     chipStateMarkers.current.forEach((m) => m.remove());
     chipStateMarkers.current = [];
@@ -397,9 +483,7 @@ export default function GuideSouthAmericaMapPage() {
   // ---- mount/unmount do mapa ----
   useEffect(() => {
     (async () => {
-      // garante que os IDs da região/estados foram descobertos
       await ensureNorthIdsLoaded();
-
       if (!mapRef.current) return;
       mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
@@ -419,6 +503,13 @@ export default function GuideSouthAmericaMapPage() {
       stageBadge.current = new StageBadgeControl();
       m.addControl(stageBadge.current as any, "bottom-left");
 
+      // helper: deve mostrar o chip/locks?
+      const shouldShowRegionUI = () => {
+        if (levelRef.current !== "country") return false;
+        const soft = new mapboxgl.LngLatBounds(softBoundsPair);
+        return soft.contains(m.getCenter());
+      };
+
       const onDragEnd = () => {
         if (!m || levelRef.current !== "country") return;
         const center = m.getCenter();
@@ -428,6 +519,21 @@ export default function GuideSouthAmericaMapPage() {
         }
       };
       m.on("dragend", onDragEnd);
+
+      // esconder enquanto move; mostrar quando parar e estiver focado no Brasil
+      const onMoveStart = () => {
+        if (levelRef.current === "country") {
+          showRegionChip(false);
+          showLockMarkers(false);
+        }
+      };
+      const onMoveEnd = () => {
+        const visible = shouldShowRegionUI();
+        showRegionChip(visible);
+        showLockMarkers(visible);
+      };
+      m.on("movestart", onMoveStart);
+      m.on("moveend", onMoveEnd);
 
       m.once("load", () => {
         const deep = (location.state as any)?.deepLink as
@@ -444,18 +550,37 @@ export default function GuideSouthAmericaMapPage() {
         } else {
           m.fitBounds(toPair(brasilBounds), { padding: 24, duration: 650 });
           applyGesturesFor("country");
-          stageBadge.current?.update({ variant: "country", subtitle: "América do Sul", title: "Mapa do Brasil" });
+          stageBadge.current?.update({
+            variant: "country",
+            subtitle: "América do Sul",
+            title: "Mapa do Brasil",
+          });
           backCtrl.current?.setVisible(false);
-          m.once("moveend", () => requestAnimationFrame(() => showRegionChip(true)));
+
+          // prepara locks e mostra quando terminar o movimento
+          ensureLockMarkers();
+          showLockMarkers(false);
+
+          m.once("moveend", () =>
+            requestAnimationFrame(() => {
+              const visible = shouldShowRegionUI();
+              showRegionChip(visible);
+              showLockMarkers(visible);
+            })
+          );
         }
       });
 
       map.current = m;
       return () => {
         m.off("dragend", onDragEnd);
+        m.off("movestart", onMoveStart);
+        m.off("moveend", onMoveEnd);
         hidePhasesDashedPath(m);
         clearPhaseButtons(phaseMarkersRef);
         clearStateChips();
+        showRegionChip(false);
+        clearLockMarkers();
         chipRegionMarker.current?.remove();
         chipRegionMarker.current = null;
         map.current = null;
