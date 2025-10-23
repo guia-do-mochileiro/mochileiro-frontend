@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Pagination from "#/components/Pagination";
 import RankingCard from "#/modules/guide/components/ranking/RankingCard";
 import { getRanking, type RankingPage } from "#/modules/guide/services/rankingService";
@@ -11,12 +11,27 @@ export default function GuideRankingPage() {
   const [err, setErr] = useState<string | null>(null);
   const [meId, setMeId] = useState<string | null>(null);
 
-  async function fetchAll(p: number) {
+  // busca
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounce
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Reseta página ao mudar o termo
+  useEffect(() => {
+    setPage(0);
+  }, [debouncedSearch]);
+
+  async function fetchAll(p: number, term: string) {
     setLoading(true);
     setErr(null);
     try {
       const [rankRes, me] = await Promise.all([
-        getRanking({ page: p, size: 9, sort: "totalPoints,desc" }),
+        getRanking({ page: p, size: 9, sort: "totalPoints,desc", search: term }),
         fetchMe().catch(() => null),
       ]);
       setData(rankRes);
@@ -29,9 +44,17 @@ export default function GuideRankingPage() {
   }
 
   useEffect(() => {
-    fetchAll(page);
+    fetchAll(page, debouncedSearch);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, debouncedSearch]);
+
+  // Fallback de filtro local (caso o backend ignore o search)
+  const filteredContent = useMemo(() => {
+    const list = data?.content ?? [];
+    if (!debouncedSearch) return list;
+    const q = debouncedSearch.toLowerCase();
+    return list.filter((u) => (u.username || "").toLowerCase().includes(q));
+  }, [data?.content, debouncedSearch]);
 
   return (
     <div className="min-h-full w-full bg-[#FFFFE0]">
@@ -43,6 +66,30 @@ export default function GuideRankingPage() {
           <p className="mt-1 text-sm text-[#7a6a32]">
             Veja a colocação geral e seus pontos!
           </p>
+
+          {/* Campo de busca */}
+          <div className="mt-4 flex justify-center">
+            <div className="relative w-full max-w-xl">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Digite seu nome..."
+                className="w-full rounded-xl border border-[#d2d8a8] bg-white px-4 py-3 pr-10 text-[#4b3e17] placeholder-[#a59559] outline-none focus:ring-2 focus:ring-emerald-500/50"
+                aria-label="Buscar no ranking"
+              />
+              {/* botão limpar */}
+              {search && (
+                <button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-sm font-semibold text-[#6b5a2a] hover:bg-[#f4f0cf]"
+                  onClick={() => setSearch("")}
+                  aria-label="Limpar busca"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
         </header>
 
         {loading && (
@@ -57,7 +104,7 @@ export default function GuideRankingPage() {
             <button
               type="button"
               className="mt-3 rounded-md bg-white px-4 py-2 text-sm font-bold text-rose-900 ring-1 ring-rose-300 hover:bg-rose-100"
-              onClick={() => fetchAll(page)}
+              onClick={() => fetchAll(page, debouncedSearch)}
             >
               Tentar novamente
             </button>
@@ -67,7 +114,8 @@ export default function GuideRankingPage() {
         {!loading && !err && (
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(data?.content ?? []).map((u, idx) => {
+              {filteredContent.map((u, idx) => {
+                // posição global continua baseada na paginação retornada
                 const globalPosition = (data?.number ?? 0) * (data?.size ?? 9) + (idx + 1);
                 const highlight = meId && u.userId === meId;
                 return (
