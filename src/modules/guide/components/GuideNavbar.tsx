@@ -1,5 +1,5 @@
 // src/modules/guide/components/GuideNavbar.tsx
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu } from "lucide-react";
 
@@ -9,8 +9,26 @@ import AchievementsIcon from "#/modules/guide/assets/icons/3 - Achievementscon.p
 import PatentsIcon from "#/modules/guide/assets/icons/4 - PatentsIcon.png";
 import GuideMenuModal from "#/modules/guide/components/GuideMenuModal";
 
+// ✅ pega dados do usuário (inclui avatar)
+import { fetchMe } from "#/modules/guide/services/profile/userService";
+
+// Avatares (mesmo padrão do ProfileModal/Ranking)
+import Avatar1 from "#/modules/guide/assets/avatars/Avatar1.png";
+import Avatar2 from "#/modules/guide/assets/avatars/Avatar2.png";
+import Avatar3 from "#/modules/guide/assets/avatars/Avatar3.png";
+import Avatar4 from "#/modules/guide/assets/avatars/Avatar4.png";
+import Avatar5 from "#/modules/guide/assets/avatars/Avatar5.png";
+import Avatar6 from "#/modules/guide/assets/avatars/Avatar6.png";
+import Avatar7 from "#/modules/guide/assets/avatars/Avatar7.png";
+import Avatar8 from "#/modules/guide/assets/avatars/Avatar8.png";
+
 type TabKey = "map" | "ranking" | "achievements" | "patents";
-type GuideNavbarProps = { active: TabKey; onMenuClick?: () => void; onAvatarClick?: () => void; userName?: string; };
+type GuideNavbarProps = {
+  active: TabKey;
+  onMenuClick?: () => void;
+  onAvatarClick?: () => void;
+  userName?: string;
+};
 
 const tabs = [
   { key: "map", label: "MAPA", icon: MapIcon, to: "/guide" },
@@ -19,9 +37,60 @@ const tabs = [
   { key: "patents", label: "PATENTES", icon: PatentsIcon, to: "/guide/patentes" },
 ] as const;
 
+// ---- helpers de avatar (mesmo contrato do backend: "AVATAR_1" ... "AVATAR_8")
+type AvatarKey =
+  | "AVATAR_1" | "AVATAR_2" | "AVATAR_3" | "AVATAR_4"
+  | "AVATAR_5" | "AVATAR_6" | "AVATAR_7" | "AVATAR_8";
+
+const AVATAR_MAP: Record<AvatarKey, string> = {
+  AVATAR_1: Avatar1,
+  AVATAR_2: Avatar2,
+  AVATAR_3: Avatar3,
+  AVATAR_4: Avatar4,
+  AVATAR_5: Avatar5,
+  AVATAR_6: Avatar6,
+  AVATAR_7: Avatar7,
+  AVATAR_8: Avatar8,
+};
+
+function resolveAvatarSrc(avatarKey?: string | null): string | null {
+  if (!avatarKey) return null;
+  const key = avatarKey as AvatarKey;
+  return AVATAR_MAP[key] ?? null;
+}
+
 export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userName }: GuideNavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  // estado para avatar/nome do usuário logado
+  const [meName, setMeName] = useState<string | undefined>(userName);
+  const [avatarKey, setAvatarKey] = useState<string | null>(null);
+  const [loadingMe, setLoadingMe] = useState<boolean>(false);
+
+  // carrega o "me" uma vez
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingMe(true);
+        const me = await fetchMe();
+        if (!mounted) return;
+        setMeName((prev) => prev || me.username || undefined);
+        setAvatarKey(me.avatar ?? null);
+      } catch {
+        // se falhar, deixa o fallback (bolinha gradiente)
+      } finally {
+        if (mounted) setLoadingMe(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const avatarSrc = useMemo(() => resolveAvatarSrc(avatarKey), [avatarKey]);
+  const ariaAvatar = meName ? `Abrir perfil de ${meName}` : "Abrir perfil";
 
   return (
     <>
@@ -62,14 +131,25 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
                 <Menu className="h-5 w-5" />
               </button>
 
+              {/* ✅ Botão do avatar do usuário */}
               <button
                 type="button"
                 onClick={onAvatarClick}
-                aria-label={userName ? `Abrir perfil de ${userName}` : "Abrir perfil"}
+                aria-label={ariaAvatar}
+                title={meName ?? "Perfil"}
                 className="grid h-10 w-10 place-items-center overflow-hidden rounded-full ring-2 ring-[#9db668] bg-white"
-                title={userName ?? "Perfil"}
               >
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500" />
+                {/* se já temos avatar, exibe a imagem; caso contrário, fallback */}
+                {avatarSrc && !loadingMe ? (
+                  <img
+                    src={avatarSrc}
+                    alt="Avatar do usuário"
+                    className="h-9 w-9 object-contain"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500" />
+                )}
               </button>
             </div>
           </div>

@@ -38,7 +38,7 @@ export default function GuideAchievementsPage() {
       <div className="mx-auto max-w-6xl p-4 sm:p-6">
         <header className="mb-4 sm:mb-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#69521a]">
-            Olá jogador!
+            Olá jogador(a)!
           </h1>
           <p className="mt-1 text-sm text-[#7a6a32]">
             Acompanhe seu progresso e desbloqueie todas as conquistas!
