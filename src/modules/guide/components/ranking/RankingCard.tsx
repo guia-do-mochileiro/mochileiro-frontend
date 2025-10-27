@@ -51,7 +51,7 @@ export default function RankingCard({
   const medalSrc = position === 1 ? Medal1 : position === 2 ? Medal2 : Medal3;
   const avatarSrc = resolveAvatar(avatarKey);
 
-  // layout centralizado a partir do 4º
+  
   const compact = position >= 4;
 
   return (
@@ -63,12 +63,12 @@ export default function RankingCard({
           : "border-[#d8d5c0] bg-white",
       ].join(" ")}
     >
-      {/* Posição (#1, #2, ...) */}
+      
       <div className="absolute left-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-[#5b3a17] text-white shadow">
         <span className="text-sm font-extrabold">#{position}</span>
       </div>
 
-      {/* Topo: nome */}
+      
       <div className="pl-14 pr-2">
         <h3
           className="line-clamp-2 h-[44px] text-xl font-extrabold leading-5 text-[#5b3a17]"
@@ -79,16 +79,16 @@ export default function RankingCard({
         <div className="mt-2 h-px w-full bg-[#c9bda4]" />
       </div>
 
-      {/* Rodapé */}
+      
       {!compact ? (
-        // 1º ao 3º: avatar maior + medalha
+        
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* avatar maior */}
+            
             <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-[#FFF5CF] ring-2 ring-[#f0e4b3] shadow">
               <img src={avatarSrc} alt="" className="h-16 w-16 object-contain" />
             </div>
-            {/* pontos maiores */}
+            
             <div className="leading-6">
               <div className="tabular-nums text-2xl sm:text-3xl font-extrabold text-[#5b3a17]">
                 {points}
@@ -109,7 +109,7 @@ export default function RankingCard({
           )}
         </div>
       ) : (
-        // 4º em diante: centralizado lado a lado
+        
         <div className="mt-2 flex items-center justify-center gap-5">
           <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-[#FFF5CF] ring-2 ring-[#f0e4b3] shadow">
             <img src={avatarSrc} alt="" className="h-14 w-14 object-contain" />

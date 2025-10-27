@@ -17,15 +17,15 @@ export function isAuthenticated(): boolean {
   const token = getCookie("authToken");
   if (!token) return false;
   const payload = parseJwt(token);
-  if (!payload?.exp) return true; // sem exp no token? assume válido
+  if (!payload?.exp) return true; 
   const now = Math.floor(Date.now() / 1000);
   return now < payload.exp;
 }
 
 export function logout(): void {
-  // apaga cookies que você usa
+  
   document.cookie = `authToken=; Max-Age=0; path=/; SameSite=Lax`;
   document.cookie = `userId=; Max-Age=0; path=/; SameSite=Lax`;
-  // redireciona pra login/landing
+  
   window.location.href = "/login";
 }

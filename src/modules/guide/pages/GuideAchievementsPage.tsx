@@ -1,4 +1,4 @@
-// src/modules/guide/pages/GuideRankingPage.tsx
+
 import { useEffect, useState } from "react";
 
 import AchievementCard from "#/modules/guide/components/achievements/AchievementCard";
@@ -9,8 +9,8 @@ import {
 } from "#/modules/guide/services/achievementsService";
 
 export default function GuideAchievementsPage() {
-  // usamos esta página para exibir as CONQUISTAS com paginação de 9 itens
-  const [page, setPage] = useState(0); // 0-index
+  
+  const [page, setPage] = useState(0); 
   const [data, setData] = useState<AchievementPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -30,7 +30,7 @@ export default function GuideAchievementsPage() {
 
   useEffect(() => {
     fetchPage(page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [page]);
 
   return (
@@ -45,7 +45,7 @@ export default function GuideAchievementsPage() {
           </p>
         </header>
 
-        {/* Estados de loading / erro */}
+        
         {loading && (
           <div className="grid h-[200px] place-items-center text-[#6b5a2a]">
             Carregando conquistas…
@@ -67,7 +67,7 @@ export default function GuideAchievementsPage() {
 
         {!loading && !err && (
           <>
-            {/* Grid de 9 cards por página */}
+            
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {(data?.content ?? []).map((a) => (
                 <AchievementCard
@@ -81,7 +81,7 @@ export default function GuideAchievementsPage() {
               ))}
             </div>
 
-            {/* Paginação */}
+            
             <Pagination
               page={data?.number ?? 0}
               totalPages={data?.totalPages ?? 1}

@@ -1,25 +1,19 @@
 // src/components/TipCard.tsx
 import { useEffect, useMemo, useState } from "react";
+import { RefreshCw } from "lucide-react";
 import TipIcon from "#/modules/guide/assets/icons/5 - TipIcon.png";
 import { getRandomCuriosity } from "#/modules/guide/services/curiositiesService";
+import { useSfx } from "#/hooks/useSfx";
 
 type Props = {
-  /** Texto da dica/curiosidade. Se omitido, o card buscará do backend. */
   text?: string;
-  /** Rótulo do chip (ex.: "CURIOSIDADE" ou "DICA") */
-  chipLabel?: string;               // default: "CURIOSIDADE"
-  /** Cor da borda/acento */
-  accent?: string;                  // default: "#9db668"
-  /** Cor do fundo do card */
-  cardBg?: string;                  // default: "#FFFDE1"
-  /** Tamanho base do texto (px) */
-  textSize?: number;                // default: 23
-  /** Padding interno do card (px) */
-  cardPadding?: number;             // default: 24
-  /** Raio da borda (px) */
-  radius?: number;                  // default: 24
-  /** Mostrar botão “trocar” para buscar outra curiosidade */
-  allowRefresh?: boolean;           // default: false
+  chipLabel?: string;
+  accent?: string;
+  cardBg?: string;
+  textSize?: number;
+  cardPadding?: number;
+  radius?: number;
+  allowRefresh?: boolean;
 };
 
 export default function TipCard({
@@ -30,12 +24,16 @@ export default function TipCard({
   textSize = 23,
   cardPadding = 24,
   radius = 24,
+  allowRefresh = true,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [curiosity, setCuriosity] = useState<string>(text ?? "");
 
   const mustFetch = useMemo(() => !text, [text]);
+
+  // 🔊 som de clique
+  const { playClick } = useSfx({ volume: 0.7, clickVolume: 1 });
 
   async function load() {
     if (!mustFetch) return;
@@ -53,18 +51,15 @@ export default function TipCard({
   }
 
   useEffect(() => {
-    // se o texto vier via prop, só garante o state local
     if (!mustFetch) {
       setCuriosity(text ?? "");
       return;
     }
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mustFetch]);
+  }, [mustFetch, text]);
 
   return (
     <div>
-      {/* CHIP acima do card */}
       <div
         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 font-semibold text-white shadow mb-3"
         style={{ backgroundColor: accent }}
@@ -73,9 +68,23 @@ export default function TipCard({
         <img src={TipIcon} alt="" aria-hidden className="h-10 w-10 object-contain" />
         <span className="uppercase tracking-wide">{chipLabel}</span>
 
+        {allowRefresh && mustFetch && (
+          <button
+            type="button"
+            onClick={() => {
+              playClick();
+              load();
+            }}
+            disabled={loading}
+            title="Trocar curiosidade"
+            aria-label="Trocar curiosidade"
+            className="ml-1 grid h-7 w-7 place-items-center rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-60"
+          >
+            <RefreshCw className="h-4 w-4 text-white" />
+          </button>
+        )}
       </div>
 
-      {/* CARD com o texto centralizado */}
       <section
         className="w-full shadow"
         style={{
@@ -103,7 +112,10 @@ export default function TipCard({
             {mustFetch && (
               <button
                 type="button"
-                onClick={load}
+                onClick={() => {
+                  playClick();
+                  load();
+                }}
                 className="rounded bg-white/70 px-3 py-1 text-[#6b5a2a] ring-1 ring-[#dcd7a8] hover:bg-white"
               >
                 Tentar novamente

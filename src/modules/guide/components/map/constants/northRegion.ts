@@ -1,4 +1,4 @@
-// Tipos compartilhados
+
 export type Bound = [[number, number], [number, number]];
 export type RegionNorthStateId =
   | "ACRE"

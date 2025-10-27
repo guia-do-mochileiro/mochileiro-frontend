@@ -32,7 +32,7 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
-      // ⬇️ layout /guide com abas e sidebar
+      
       {
         path: "guide",
         element: <GuidePage />,
@@ -44,7 +44,7 @@ const router = createBrowserRouter([
         ],
       },
 
-      // ⬇️ ROTA DO QUIZ FORA do layout GuidePage (full screen)
+      
       { path: "guide/quiz/:stateCode/:missionId", element: <GuideQuizPage /> },
     ],
   },

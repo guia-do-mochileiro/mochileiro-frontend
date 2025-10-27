@@ -2,26 +2,26 @@ import { Button } from "#/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Youtube, Instagram, Linkedin } from "lucide-react";
 
-// Hero
+
 import LogoImg from "#/modules/authentication/assets/1 -Logo.png";
 import PhonesImg from "#/modules/authentication/assets/2 - Celulares.png";
 import BackpackImg from "#/modules/authentication/assets/3 - Mochila.png";
 import WaveImg from "#/modules/authentication/assets/4 - Ondas.png";
 
-// Seções
+
 import LearnImg from "#/modules/authentication/assets/5 - Aprender Brincando.png";
 import ExploreImg from "#/modules/authentication/assets/6 - Explore o Brasil.png";
 import ProgressImg from "#/modules/authentication/assets/7 - Progresso Visivel.png";
 import WhyImg from "#/modules/authentication/assets/8 - Por que aprender Geografia com o Mochileiro.png";
 
-// Fundo decorativo (sol) da seção verde “Por que aprender…”
+
 import SunImg from "#/modules/authentication/assets/9 - Sol.png";
 
 export default function LandingPage() {
   const navigate = useNavigate();
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#9db668] to-[#7a9456]">
-      {/* Header */}
+      
       <header className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-2">
           <img src={LogoImg} alt="Mochileiro - logo" className="h-10 w-10 rounded-full" />
@@ -35,10 +35,10 @@ export default function LandingPage() {
         </Button>
       </header>
 
-      {/* Hero */}
+      
       <main className="flex flex-1 items-center">
         <div className="container mx-auto grid grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
-          {/* Esquerda */}
+          
           <div className="relative flex flex-col gap-6">
             <h1 className="text-balance text-5xl font-extrabold leading-tight text-white lg:text-6xl">
               Pegue sua
@@ -50,7 +50,7 @@ export default function LandingPage() {
               explorar!
             </h1>
 
-            {/* Mochila posicionada ao lado do título */}
+            
             <img
               src={BackpackImg}
               alt="Mochila"
@@ -68,16 +68,16 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          {/* Direita */}
+          
           <div className="relative flex min-h-[420px] items-end justify-end">
-            {/* Onda no fundo */}
+            
             <img
               src={WaveImg}
               alt=""
               aria-hidden="true"
               className="pointer-events-none absolute bottom-0 right-0 w-[90%] max-w-[720px] select-none"
             />
-            {/* Celulares acima da onda */}
+            
             <img
               src={PhonesImg}
               alt="Mockups com o jaguar e telas do app"
@@ -87,7 +87,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* Seção 1 — Aprenda Brincando */}
+      
       <section className="bg-white py-20">
         <div className="container mx-auto px-6">
           <div className="mb-20 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -112,7 +112,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Seção 2 — Explore o Brasil */}
+          
           <div className="grid grid-cols-1 items-center ml-[150px] gap-12 lg:grid-cols-2">
             <div className="flex flex-col gap-4 lg:order-1">
               <h2 className="text-balance text-4xl font-bold text-[#9db668] lg:text-5xl">
@@ -137,9 +137,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Seção verde — Por que aprender… (Sol atrás à esquerda + imagem 8 à esquerda) */}
+      
       <section className="relative overflow-hidden bg-gradient-to-b from-[#9db668] to-[#7a9456] py-20">
-        {/* Sol decorativo, ancorado no canto inferior esquerdo */}
+        
 
         <img
           src={SunImg}
@@ -150,7 +150,7 @@ export default function LandingPage() {
 
         <div className="container relative z-10 mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-            {/* Esquerda — ILUSTRAÇÃO (imagem 8) sobre o Sol */}
+            
             <div className="relative flex justify-center">
 
               <img
@@ -160,7 +160,7 @@ export default function LandingPage() {
               />
             </div>
 
-            {/* Direita — cards de benefícios */}
+            
             <div className="flex flex-col gap-6">
               <h2 className="text-balance text-center text-3xl font-bold text-white lg:text-left lg:text-4xl">
                 Por que aprender Geografia
@@ -168,7 +168,7 @@ export default function LandingPage() {
                 com o Mochileiro?
               </h2>
 
-              {/* Benefits Cards – branco -> verde no hover */}
+              
               <div className="flex flex-col gap-4">
                 {[
                   {
@@ -235,7 +235,7 @@ export default function LandingPage() {
       </section>
 
 
-      {/* Seção 3 — Progresso visível */}
+      
       <section className="bg-white py-20">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -263,7 +263,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
+      
       <footer className="bg-[#5a6d47] py-12">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 gap-12 md:grid-cols-3">

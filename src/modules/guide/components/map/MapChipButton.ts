@@ -1,4 +1,4 @@
-// src/components/map/MapChipButton.ts
+
 export type ChipVariant = "region" | "state";
 
 type ChipOptions = {
@@ -23,7 +23,7 @@ export function createMapChipButton({ label, onClick, variant = "region" }: Chip
     e.stopPropagation();
     onClick(e);
   };
-  // acessibilidade
+  
   btn.setAttribute("aria-label", label);
   btn.style.display = "flex";
   btn.style.alignItems = "center";

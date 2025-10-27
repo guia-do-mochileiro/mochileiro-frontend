@@ -7,9 +7,9 @@ export type UserMe = {
   id: string;
   username: string;
   email: string;
-  birthDate: string | null;   // ISO
+  birthDate: string | null;   
   gender?: Gender | null;
-  avatar?: string | null;     // "AVATAR_1" ... "AVATAR_8"
+  avatar?: string | null;     
 };
 
 export async function fetchMe(): Promise<UserMe> {
@@ -21,14 +21,14 @@ export async function updateMe(payload: {
   id: string;
   username: string;
   email: string;
-  birthDate: string | null; // ISO
+  birthDate: string | null; 
   gender?: Gender | "";
-  avatar?: string | null;   // 👈 novo
+  avatar?: string | null;   
 }): Promise<void> {
   const { id, ...body } = payload;
   await api.put(`/api/users/update/${id}`, {
     ...body,
-    // normaliza vazio para null
+    
     gender: body.gender || null,
     avatar: body.avatar ?? null,
   });

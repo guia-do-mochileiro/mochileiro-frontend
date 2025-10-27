@@ -1,10 +1,10 @@
-// src/modules/guide/components/map/phases/phasePath.ts
+
 import type { Map, GeoJSONSource } from "mapbox-gl";
 
 export const PHASE_PATH_SOURCE = "phase-path-src";
 export const PHASE_PATH_LAYER = "phase-path-layer";
 
-/** Cria/atualiza e mostra a linha pontilhada conectando as fases (ABERTA: 1→2→3→4). */
+
 export function addOrShowPhasesDashedPath(map: Map, coords: [number, number][]) {
   const data: GeoJSON.Feature<GeoJSON.LineString> = {
     type: "Feature",
@@ -36,7 +36,7 @@ export function addOrShowPhasesDashedPath(map: Map, coords: [number, number][]) 
   });
 }
 
-/** Esconde a camada (se existir). */
+
 export function hidePhasesDashedPath(map: Map) {
   if (map.getLayer(PHASE_PATH_LAYER)) {
     map.setLayoutProperty(PHASE_PATH_LAYER, "visibility", "none");

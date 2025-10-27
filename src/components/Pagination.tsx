@@ -1,11 +1,11 @@
 type Props = {
-  /** página atual (0-index) */
+  
   page: number;
-  /** total de páginas */
+  
   totalPages: number;
-  /** callback para trocar de página (0-index) */
+  
   onChange: (page: number) => void;
-  /** opcional: quantos números mostrar (padrão 5) */
+  
   window?: number;
 };
 
@@ -22,7 +22,7 @@ export default function Pagination({
     if (clamped !== page) onChange(clamped);
   };
 
-  // calcula janela de páginas
+  
   const half = Math.floor(window / 2);
   let start = Math.max(0, page - half);
   let end = Math.min(totalPages - 1, start + window - 1);
@@ -42,7 +42,7 @@ export default function Pagination({
         Anterior
       </button>
 
-      {/* Primeira + reticências */}
+      
       {start > 0 && (
         <>
           <PageButton n={0} current={page} onClick={go} />
@@ -50,12 +50,12 @@ export default function Pagination({
         </>
       )}
 
-      {/* Janela */}
+      
       {pages.map((n) => (
         <PageButton key={n} n={n} current={page} onClick={go} />
       ))}
 
-      {/* Reticências + Última */}
+      
       {end < totalPages - 1 && (
         <>
           <span className="px-1 text-slate-500">…</span>

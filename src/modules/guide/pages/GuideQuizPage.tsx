@@ -1,4 +1,4 @@
-// src/modules/guide/pages/GuideQuizPage.tsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -7,6 +7,7 @@ import AnswerButton from "#/modules/guide/components/quiz/AnswerButton";
 import QuizFooter from "#/modules/guide/components/quiz/QuizFooter";
 import PhaseResultCard from "#/modules/guide/components/quiz/PhaseResultCard";
 import GuideMenuModal from "#/modules/guide/components/GuideMenuModal";
+import { useSfx } from "#/hooks/useSfx";
 
 import OverallProgressCard from "#/components/OverallProgressCard";
 import TipCard from "#/components/TipCard";
@@ -74,6 +75,7 @@ type PhaseProgress = {
 
 export default function GuideQuizPage() {
   const navigate = useNavigate();
+  const { playAchievement, playCorrect, playWrong, playFinish } = useSfx();
   const { missionId, stateCode } = useParams<{ missionId: string; stateCode: string }>();
   const location = useLocation();
   const locState = (location.state || {}) as LocationState;
@@ -93,7 +95,7 @@ export default function GuideQuizPage() {
     };
   }, [locState]);
 
-  // ====== Estado do Quiz ======
+  
   const [loading, setLoading] = useState(true);
   const [queue, setQueue] = useState<number[]>([]);
   const [qIndex, setQIndex] = useState<number>(0);
@@ -108,11 +110,11 @@ export default function GuideQuizPage() {
   const [progressState, setProgressState] = useState<PhaseProgress | null>(null);
   const [finished, setFinished] = useState(false);
 
-  // ====== Intersticial "vamos nas erradas" ======
+  
   const [showWrongIntro, setShowWrongIntro] = useState(false);
-  const wrongIntroShownRef = useRef(false); // garante que aparece uma única vez
-  const initialWrongSetRef = useRef<Set<string>>(new Set()); // erradas vindas do backend
-  const wrongIdsSessionRef = useRef<Set<string>>(new Set()); // erradas nesta jogada
+  const wrongIntroShownRef = useRef(false); 
+  const initialWrongSetRef = useRef<Set<string>>(new Set()); 
+  const wrongIdsSessionRef = useRef<Set<string>>(new Set()); 
 
   const currentQuestion = useMemo(() => {
     if (!questions.length || !queue.length) return null;
@@ -120,7 +122,7 @@ export default function GuideQuizPage() {
     return questions[absoluteIndex] ?? null;
   }, [questions, queue, qIndex]);
 
-  // Carrega quiz + progresso
+  
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -148,7 +150,7 @@ export default function GuideQuizPage() {
 
         setQuestions(quiz.questions || []);
 
-        // Fila = tudo que ainda precisa ser ACERTADO.
+        
         const total = quiz.questions?.length ?? 0;
         const allIdx = Array.from({ length: total }, (_, i) => i);
         const correctSet = new Set<string>(pg.correctQuestionIds);
@@ -162,7 +164,7 @@ export default function GuideQuizPage() {
         const previouslyWrong = pendingIdx.filter((i) => wrongSet.has(quiz.questions[i].id));
         const ordered = [...notTried, ...previouslyWrong];
 
-        const wrongIntroNeeded = !pg.completed && !pg.passed; // só na primeira vez da fase
+        const wrongIntroNeeded = !pg.completed && !pg.passed; 
 
         if (pg.completed || ordered.length === 0) {
           setQueue([]);
@@ -172,7 +174,7 @@ export default function GuideQuizPage() {
           setQueue(ordered);
           setFinished(false);
 
-          // Se começarmos já nas erradas, mostra intro imediatamente (uma vez)
+          
           if (
             wrongIntroNeeded &&
             previouslyWrong.length > 0 &&
@@ -202,7 +204,16 @@ export default function GuideQuizPage() {
     };
   }, [missionId]);
 
-  // Ações
+  useEffect(() => {
+  if (finished) {
+    
+    playFinish();
+  }
+  
+}, [finished]);
+
+
+  
   const handleSelect = (altId: string) => {
     if (mode !== "answering" || finished || showWrongIntro) return;
     setSelectedAltId(altId);
@@ -212,38 +223,45 @@ export default function GuideQuizPage() {
     if (!currentQuestion || !selectedAltId || finished || showWrongIntro) return;
     try {
       const res = await submitAnswer({
-        questionId: currentQuestion.id,
-        selectedAlternativeId: selectedAltId,
-      });
+  questionId: currentQuestion.id,
+  selectedAlternativeId: selectedAltId,
+});
 
-      if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
-        res.unlockedAchievements.forEach((achName) => {
-          const iconUrl = resolveAchievementIcon(achName, ImgCenter);
-          toast(
-            <SuccessToast
-              title="Parabéns!"
-              description={`Você desbloqueou a conquista "${achName}"`}
-              iconSrc={iconUrl}
-            />
-          );
-        });
-      }
 
-      const ok = Boolean(res.correct);
-      setIsCorrect(ok);
-      setMode("feedback");
-      setMascot(ok ? "happy" : "sad");
+if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
+  res.unlockedAchievements.forEach((achName) => {
+    playAchievement();
+    const iconUrl = resolveAchievementIcon(achName, ImgCenter);
+    toast(
+      <SuccessToast
+        title="Parabéns!"
+        description={`Você desbloqueou a conquista "${achName}"`}
+        iconSrc={iconUrl}
+      />
+    );
+  });
+}
 
-      // Guarda no set de erradas desta sessão
-      if (!ok && currentQuestion) {
-        wrongIdsSessionRef.current.add(currentQuestion.id);
-      }
+const ok = Boolean(res.correct);
+setIsCorrect(ok);
+setMode("feedback");
+setMascot(ok ? "happy" : "sad");
+
+
+if (ok) playCorrect();
+else     playWrong();
+
+
+if (!ok && currentQuestion) {
+  wrongIdsSessionRef.current.add(currentQuestion.id);
+}
+
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Revalida progresso (server) ao finalizar
+  
   const refetchProgressForResult = async () => {
     if (!missionId) return;
     try {
@@ -265,12 +283,12 @@ export default function GuideQuizPage() {
     }
   };
 
-  // Avança após feedback
+  
   const goNextQuestion = () => {
     if (finished) return;
     if (!queue.length) return;
 
-    // otimista para o card
+    
     if (isCorrect) {
       setProgressState((prev) =>
         prev
@@ -296,7 +314,7 @@ export default function GuideQuizPage() {
       } else {
         const nextIdx = Math.min(qIndex, nextQueue.length - 1);
 
-        // >>> Detecta transição para bloco de erradas e abre o intersticial uma vez
+        
         const wrongIntroNeeded = !(progressState?.completed || progressState?.passed);
         if (wrongIntroNeeded && !wrongIntroShownRef.current) {
           const nextId = questions[nextQueue[nextIdx]]?.id;
@@ -337,7 +355,7 @@ export default function GuideQuizPage() {
       const next = [...rest, absolute];
       const nextIdx = Math.min(qIndex, next.length - 1);
 
-      // Se o próximo já é do bloco de erradas e ainda não mostramos a intro
+      
       const wrongIntroNeeded = !(progressState?.completed || progressState?.passed);
       const nextId = questions[next[nextIdx]]?.id;
       if (
@@ -432,7 +450,7 @@ export default function GuideQuizPage() {
               />
             </div>
           ) : showWrongIntro ? (
-            // ===== Intersticial das erradas =====
+            
             <div className="flex flex-1 items-center justify-center">
               <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-[#FFFDEB] p-8 text-center shadow">
                 <h3 className="mb-2 text-2xl font-extrabold text-[#69521a]">

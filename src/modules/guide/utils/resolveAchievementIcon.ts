@@ -1,4 +1,4 @@
-// Carrega todos os PNGs da pasta de conquistas (eager, como URLs)
+
 const iconModules = import.meta.glob<string>(
   "/src/modules/guide/assets/achievements/*.png",
   { eager: true, as: "url" }
@@ -14,7 +14,7 @@ function norm(s: string) {
     .trim();
 }
 
-/** Tenta casar o nome da conquista com um arquivo na pasta achievements. */
+
 export function resolveAchievementIcon(name: string, fallbackUrl: string) {
   const target = norm(name);
   for (const [path, url] of Object.entries(iconModules)) {

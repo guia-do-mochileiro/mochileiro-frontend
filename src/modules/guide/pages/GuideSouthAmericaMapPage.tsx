@@ -1,8 +1,9 @@
-// src/modules/guide/pages/GuideSouthAmericaMapPage.tsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import type { LngLatBoundsLike } from "mapbox-gl";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSfx } from "#/hooks/useSfx";
 
 import { createMapChipButton } from "#/modules/guide/components/map/MapChipButton";
 import { BackControl } from "#/modules/guide/components/map/BackControl";
@@ -25,17 +26,17 @@ import {
   getStateIdByLocal,
 } from "#/modules/guide/components/map/constants/northBackend";
 
-// Services
+
 import { getMissionsByStateId } from "#/modules/guide/services/regionsService";
 import { getPhaseProgress, resetPhaseProgress } from "#/modules/guide/services/quizService";
 
-// Ícones das fases
+
 import Phase1Icon from "#/modules/guide/assets/phases/1.png";
 import Phase2Icon from "#/modules/guide/assets/phases/2.png";
 import Phase3Icon from "#/modules/guide/assets/phases/3.png";
 import Phase4Icon from "#/modules/guide/assets/phases/4.png";
 
-// 🔒 Ícone de bloqueio para as outras regiões
+
 import LockImg from "#/modules/guide/assets/achievements/0 - Bloqueio.png";
 
 type Level = "country" | "region" | "state";
@@ -68,6 +69,7 @@ export default function GuideSouthAmericaMapPage() {
     [brasilBounds]
   );
 
+const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
   const mapRef = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const navigate = useNavigate();
@@ -79,7 +81,7 @@ export default function GuideSouthAmericaMapPage() {
   const backCtrl = useRef<BackControl | null>(null);
   const stageBadge = useRef<StageBadgeControl | null>(null);
 
-  // 🔒 marcadores de bloqueio das outras regiões
+  
   const lockMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   const missionsByStateRef = useRef<Record<string, Mission[]>>({});
@@ -88,7 +90,7 @@ export default function GuideSouthAmericaMapPage() {
   const levelRef = useRef<Level>("country");
 
   const isTransitioning = useRef(false);
-  const isOpeningPhaseRef = useRef(false); // evita cliques múltiplos no botão da fase
+  const isOpeningPhaseRef = useRef(false); 
 
   const PHASE_META = {
     1: { color: "green" as const, icon: Phase1Icon, label: PHASE_TITLES[1] },
@@ -101,7 +103,7 @@ export default function GuideSouthAmericaMapPage() {
     levelRef.current = level;
   }, [level]);
 
-  // ---- helpers básicos de transição/gestos ----
+  
   function beginTransition() {
     isTransitioning.current = true;
     backCtrl.current?.setVisible(false);
@@ -159,7 +161,7 @@ export default function GuideSouthAmericaMapPage() {
     }
   }
 
-  // ---- mapeamentos/ids ----
+  
   function getBackendStateId(stateCode: RegionNorthStateId): string | null {
     return getStateIdByLocal(stateCode as any) ?? null;
   }
@@ -186,7 +188,7 @@ export default function GuideSouthAmericaMapPage() {
     return byTitle?.id ?? null;
   }
 
-  /** Consulta progresso das 4 fases e devolve quais botões ficam bloqueados. */
+  
   async function buildLockedForMissions(missions: Mission[]) {
     const idsByIndex: Record<1 | 2 | 3 | 4, string | null> = { 1: null, 2: null, 3: null, 4: null };
     missions.forEach((m) => {
@@ -209,14 +211,14 @@ export default function GuideSouthAmericaMapPage() {
     );
 
     return {
-      1: false, // fase 1 sempre liberada
+      1: false, 
       2: !(prog[1]?.passed === true),
       3: !(prog[2]?.passed === true),
       4: !(prog[3]?.passed === true),
     } as Record<1 | 2 | 3 | 4, boolean>;
   }
 
-  /** Abre uma fase: se já concluída (`passed`), reseta antes de navegar. */
+  
   const handleOpenPhase = async (stateId: RegionNorthStateId, idx: 1 | 2 | 3 | 4) => {
     if (isOpeningPhaseRef.current) return;
     const missionId = resolveMissionId(stateId, idx);
@@ -247,7 +249,7 @@ export default function GuideSouthAmericaMapPage() {
     });
   };
 
-  // ---- navegação por nível do mapa ----
+  
   function goToCountry() {
     if (!map.current || isTransitioning.current) return;
     beginTransition();
@@ -264,7 +266,7 @@ export default function GuideSouthAmericaMapPage() {
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
 
-    // prepara os locks (mostraremos ao final do movimento)
+    
     ensureLockMarkers();
     showLockMarkers(false);
 
@@ -290,7 +292,7 @@ export default function GuideSouthAmericaMapPage() {
     });
 
     showRegionChip(false);
-    showLockMarkers(false); // some ao entrar em região
+    showLockMarkers(false); 
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
 
@@ -313,7 +315,7 @@ export default function GuideSouthAmericaMapPage() {
       title: `Mapa do ${state.label}`,
     });
 
-    showLockMarkers(false); // some ao entrar em estado
+    showLockMarkers(false);
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
     hidePhasesDashedPath(map.current!);
@@ -337,19 +339,25 @@ export default function GuideSouthAmericaMapPage() {
           listRef: phaseMarkersRef,
           icons: { phase1: Phase1Icon, phase2: Phase2Icon, phase3: Phase3Icon, phase4: Phase4Icon },
           locked,
-          onPhaseClick: (i) => handleOpenPhase(stateId, i as 1 | 2 | 3 | 4),
+          onPhaseClick: (i) => {
+            playClick();
+            handleOpenPhase(stateId, i as 1 | 2 | 3 | 4);
+          },
         });
+
       };
 
       if (!backendStateId) {
-        // Sem mapeamento: mostra botões visuais; só a 1 livre
         spawnPhaseButtonsForState({
           map: map.current!,
           stateCode: stateId,
           listRef: phaseMarkersRef,
           icons: { phase1: Phase1Icon, phase2: Phase2Icon, phase3: Phase3Icon, phase4: Phase4Icon },
           locked: { 1: false, 2: true, 3: true, 4: true },
-          onPhaseClick: (i) => handleOpenPhase(stateId, i as 1 | 2 | 3 | 4),
+          onPhaseClick: (i) => {
+            playClick();
+            handleOpenPhase(stateId, i as 1 | 2 | 3 | 4);
+          },
         });
         return;
       }
@@ -379,21 +387,28 @@ export default function GuideSouthAmericaMapPage() {
   }
 
   function handleBackClick() {
+    playClick();
     if (isTransitioning.current) return;
     const cur = levelRef.current;
     if (cur === "state") goToRegionNorte();
     else if (cur === "region") goToCountry();
   }
 
-  // ---- chips de UI (NORTE) ----
+
+  
   function showRegionChip(visible: boolean) {
     if (!map.current) return;
     if (!chipRegionMarker.current) {
       const el = createMapChipButton({
         label: "NORTE",
         variant: "region",
-        onClick: () => !isTransitioning.current && goToRegionNorte(),
+        onClick: () => {
+          if (isTransitioning.current) return;
+          playClick();            
+          goToRegionNorte();
+        },
       });
+
       chipRegionMarker.current = new mapboxgl.Marker({ element: el, anchor: "center" })
         .setLngLat(northRegion.center)
         .addTo(map.current);
@@ -401,18 +416,18 @@ export default function GuideSouthAmericaMapPage() {
     (chipRegionMarker.current.getElement() as HTMLElement).style.display = visible ? "flex" : "none";
   }
 
-  // ---- marcadores de bloqueio (outras regiões) ----
-  // centros aproximados das regiões: Nordeste, Centro-Oeste, Sudeste, Sul
+  
+  
   const OTHER_REGIONS_LOCKS: Array<{ id: "NE" | "CO" | "SE" | "S"; center: [number, number] }> = [
-    { id: "NE", center: [-42.0, -8.0] },   // Nordeste
-    { id: "CO", center: [-53.5, -17.0] },  // Centro-Oeste
-    { id: "SE", center: [-47.0, -20.5] },  // Sudeste
-    { id: "S",  center: [-51.5, -27.5] },  // Sul
+    { id: "NE", center: [-42.0, -8.0] },   
+    { id: "CO", center: [-53.5, -17.0] },  
+    { id: "SE", center: [-47.0, -20.5] },  
+    { id: "S", center: [-51.5, -27.5] },  
   ];
 
   function ensureLockMarkers() {
     if (!map.current) return;
-    if (lockMarkersRef.current.length) return; // já criados
+    if (lockMarkersRef.current.length) return; 
     OTHER_REGIONS_LOCKS.forEach((r) => {
       const el = document.createElement("div");
       el.style.display = "grid";
@@ -437,7 +452,7 @@ export default function GuideSouthAmericaMapPage() {
         .setLngLat(r.center)
         .addTo(map.current!);
 
-      // não clicável
+      
       (mk.getElement() as HTMLElement).style.pointerEvents = "none";
 
       lockMarkersRef.current.push(mk);
@@ -471,8 +486,13 @@ export default function GuideSouthAmericaMapPage() {
       const el = createMapChipButton({
         label: def.label,
         variant: "state",
-        onClick: () => !isTransitioning.current && goToState(id),
+        onClick: () => {
+          if (isTransitioning.current) return;
+          playClick();            
+          goToState(id);
+        },
       });
+
       const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
         .setLngLat(def.center)
         .addTo(map.current!);
@@ -480,7 +500,7 @@ export default function GuideSouthAmericaMapPage() {
     });
   }
 
-  // ---- mount/unmount do mapa ----
+  
   useEffect(() => {
     (async () => {
       await ensureNorthIdsLoaded();
@@ -503,7 +523,7 @@ export default function GuideSouthAmericaMapPage() {
       stageBadge.current = new StageBadgeControl();
       m.addControl(stageBadge.current as any, "bottom-left");
 
-      // helper: deve mostrar o chip/locks?
+      
       const shouldShowRegionUI = () => {
         if (levelRef.current !== "country") return false;
         const soft = new mapboxgl.LngLatBounds(softBoundsPair);
@@ -520,7 +540,7 @@ export default function GuideSouthAmericaMapPage() {
       };
       m.on("dragend", onDragEnd);
 
-      // esconder enquanto move; mostrar quando parar e estiver focado no Brasil
+      
       const onMoveStart = () => {
         if (levelRef.current === "country") {
           showRegionChip(false);
@@ -557,7 +577,7 @@ export default function GuideSouthAmericaMapPage() {
           });
           backCtrl.current?.setVisible(false);
 
-          // prepara locks e mostra quando terminar o movimento
+          
           ensureLockMarkers();
           showLockMarkers(false);
 
