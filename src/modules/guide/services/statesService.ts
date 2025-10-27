@@ -1,4 +1,4 @@
-// src/modules/guide/services/statesService.ts
+
 import { api } from "#/config/apiConfig";
 
 export type PhaseSummary = {

@@ -1,4 +1,4 @@
-// src/modules/guide/components/achievements/AchievementCard.tsx
+
 import { useMemo } from "react";
 
 import ImgCenter from "#/modules/guide/assets/quiz/4 - ImgCenter.png";
@@ -12,13 +12,13 @@ type Props = {
   completed: boolean;
 };
 
-/** carrega todos os PNGs da pasta de conquistas como URLs em build-time */
+
 const iconModules = import.meta.glob<string>(
   "/src/modules/guide/assets/achievements/*.png",
   { eager: true, as: "url" }
 );
 
-/** normaliza para comparar nomes de arquivo vs. `name` do backend */
+
 function norm(s: string) {
   return s
     .normalize("NFD")
@@ -33,12 +33,12 @@ function resolveAchievementIcon(name: string, completed: boolean): string {
   if (!completed) return LockImg;
 
   const target = norm(name);
-  // encontra pelo nome do arquivo (sem extensão), ex.: "Mestre em Cultura e Sociedade.png"
+  
   for (const [path, url] of Object.entries(iconModules)) {
     const filename = path.split("/").pop() || "";
     if (norm(filename) === target) return url as string;
   }
-  // fallback se não achar imagem específica
+  
   return ImgCenter;
 }
 
@@ -67,7 +67,7 @@ export default function AchievementCard({
       ].join(" ")}
       aria-live="polite"
     >
-      {/* Cabeçalho */}
+      
       <div className="flex items-center gap-3">
         <div className="relative h-12 w-12 shrink-0">
           <img
@@ -88,7 +88,7 @@ export default function AchievementCard({
         </h3>
       </div>
 
-      {/* Descrição */}
+      
       <p
         className={[
           "mt-2 text-sm",
@@ -98,7 +98,7 @@ export default function AchievementCard({
         {description}
       </p>
 
-      {/* Progresso */}
+      
       <div className="mt-4">
         <div className="flex items-center justify-between text-sm font-semibold">
           <span className={locked ? "text-slate-500" : "text-[#5b4d1e]"}>Progresso</span>
@@ -107,7 +107,7 @@ export default function AchievementCard({
           </span>
         </div>
 
-        {/* Barra */}
+        
         <div className="mt-2 h-2 w-full rounded-full bg-slate-300/60">
           <div
             className={["h-2 rounded-full", locked ? "bg-slate-500/50" : "bg-[#9db668]"].join(" ")}
@@ -115,7 +115,7 @@ export default function AchievementCard({
           />
         </div>
 
-        {/* Selo de concluído */}
+        
         {completed && (
           <div className="mt-3 inline-flex items-center rounded-full bg-[#eaf3d9] px-3 py-1 text-xs font-bold text-[#7a9456] ring-1 ring-[#cfe3a2]">
             CONCLUÍDA

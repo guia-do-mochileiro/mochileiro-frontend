@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import MapaPatentes from "#/modules/guide/assets/MapaPatentes.png";
 
-// Escudos (patentes)
+
 import Pioneiro from "#/modules/guide/assets/patents/1 - Pioneiro.png";
 import Explorador from "#/modules/guide/assets/patents/2 - Explorador.png";
 import Navegador from "#/modules/guide/assets/patents/3 - Navegador.png";
@@ -10,7 +10,7 @@ import Viajante from "#/modules/guide/assets/patents/5 - Viajante.png";
 import Guardiao from "#/modules/guide/assets/patents/6 - Guardião.png";
 import Lendario from "#/modules/guide/assets/patents/7 - lendário.png";
 
-// Ícone de bloqueio (mesmo usado nas conquistas)
+
 import LockIcon from "#/modules/guide/assets/achievements/0 - Bloqueio.png";
 
 import {
@@ -19,18 +19,18 @@ import {
 } from "#/modules/guide/services/patentsService";
 
 type Pin = {
-  /** nome para casar com o back (normalizado) */
+  
   key: "PIONEIRO" | "EXPLORADOR" | "NAVEGADOR" | "AVENTUREIRO" | "VIAJANTE" | "GUARDIAO" | "LENDARIO";
   src: string;
   alt: string;
-  /** posições relativas ao container (imagem) */
-  topPct: number; // 0..100 (pode passar >100 para partes bem abaixo)
-  leftPct: number; // 0..100
-  /** largura relativa ao container (mantém escala responsiva) */
-  widthPct?: number; // default 10%
+  
+  topPct: number; 
+  leftPct: number; 
+  
+  widthPct?: number; 
 };
 
-/** normaliza nome do back para lookup (tira acentos e deixa MAIÚSCULO) */
+
 function normName(s: string) {
   return s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toUpperCase().trim();
 }
@@ -53,7 +53,7 @@ export default function GuidePatentsPage() {
   const [items, setItems] = useState<PatentProgress[] | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // carrega progresso do usuário
+  
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -71,7 +71,7 @@ export default function GuidePatentsPage() {
     };
   }, []);
 
-  // indexa por nome normalizado para lookup rápido
+  
   const byName = useMemo(() => {
     const map: Record<string, PatentProgress> = {};
     (items ?? []).forEach((p) => (map[normName(p.name)] = p));
@@ -92,21 +92,18 @@ export default function GuidePatentsPage() {
         "
         aria-label="Mapa de patentes rolável"
       >
-        {/* Imagem base (fundo) */}
         <img
           src={MapaPatentes}
           alt="Mapa de patentes"
           className="block w-full select-none pointer-events-none"
           draggable={false}
         />
-
-        {/* Escudos sobre o mapa */}
         {PINS.map((pin, i) => {
-          const info = byName[pin.key]; // já normalizado
+          const info = byName[pin.key]; 
           const unlocked =
             info ? (info.unlocked ?? info.currentPoints >= info.requiredPoints) : false;
 
-          // dica ao passar o mouse
+          
           const title =
             info
               ? `${pin.alt} — ${unlocked ? "Desbloqueada" : "Bloqueada"} • ${info.currentPoints}/${info.requiredPoints} pts`
@@ -125,7 +122,6 @@ export default function GuidePatentsPage() {
               title={title}
               aria-label={title}
             >
-              {/* selo */}
               <img
                 src={pin.src}
                 alt={pin.alt}
@@ -136,7 +132,6 @@ export default function GuidePatentsPage() {
                   loading ? "animate-pulse" : "",
                 ].join(" ")}
               />
-              {/* cadeado sobreposto quando bloqueado */}
               {!unlocked && (
                 <img
                   src={LockIcon}

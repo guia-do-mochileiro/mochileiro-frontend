@@ -1,26 +1,26 @@
-// src/components/OverallProgressCard.tsx
+
 import ProgressIcon from "../assets/progress/1 - ProgressIcon.png";
 import StartIcon from "../assets/progress/2 - StartIcon.png";
 import EndIcon from "../assets/progress/3 - EndIcon.png";
 import RunnerIcon from "../assets/progress/4 -  Runner.png";
 
 type Props = {
-  /** perguntas respondidas (0..goal) */
+  
   current: number;
-  /** total de perguntas (padrão 10) */
+  
   goal?: number;
 
-  /** cor da borda/acento do card (chip e borda) */
-  accent?: string;      // default: "#9db668"
-  /** cor do fundo do card */
-  cardBg?: string;      // default: "#FFFDE1"
+  
+  accent?: string;      
+  
+  cardBg?: string;      
 
-  /** altura (px) da barra de progresso inferior */
-  barHeight?: number;   // default: 20
-  /** largura/altura (px) dos ícones de bandeiras */
-  flagSize?: number;    // default: 60
-  /** tamanho (px) do runner */
-  runnerSize?: number;  // default: 64
+  
+  barHeight?: number;   
+  
+  flagSize?: number;    
+  
+  runnerSize?: number;  
 };
 
 const clamp = (v: number, min = 0, max = 100) => Math.max(min, Math.min(max, v));
@@ -38,7 +38,7 @@ export default function OverallProgressCard({
 }: Props) {
   const progress = pct(current, goal);
 
-  // barras com “bolinhas”, no mesmo estilo do DailyMissionsCard
+  
   const trackBg = `
     radial-gradient(circle at 12px 50%, rgba(75,40,2,.30) 5px, transparent 6px) repeat-x,
     linear-gradient(#4B2802, #4B2802)
@@ -48,12 +48,11 @@ export default function OverallProgressCard({
     linear-gradient(90deg, #98cf92, #5ea963)
   `;
 
-  // padding lateral da “pista” para não colidir com as bandeiras
-  const laneSidePad = flagSize * 0.6; // px
+  
+  const laneSidePad = flagSize * 0.6; 
 
   return (
     <div>
-      {/* CHIP “PROGRESSO” */}
       <div
         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 font-semibold text-white shadow mb-3"
         style={{ backgroundColor: accent }}
@@ -62,8 +61,6 @@ export default function OverallProgressCard({
         <img src={ProgressIcon} alt="" aria-hidden className="h-8 w-8 object-contain" />
         <span>PROGRESSO</span>
       </div>
-
-      {/* CARD */}
       <section
         className="rounded-2xl shadow"
         style={{
@@ -72,7 +69,6 @@ export default function OverallProgressCard({
           padding: "18px 16px 20px",
         }}
       >
-        {/* CENA DO CORREDOR */}
         <div
           className="relative w-full rounded-2xl bg-white"
           style={{
@@ -81,7 +77,6 @@ export default function OverallProgressCard({
             padding: 12,
           }}
         >
-          {/* Bandeira inicial (vermelha) */}
           <img
             src={StartIcon}
             alt="Início"
@@ -97,8 +92,6 @@ export default function OverallProgressCard({
               filter: "drop-shadow(0 4px 0 rgba(0,0,0,.08))",
             }}
           />
-
-          {/* Bandeira final (verde) */}
           <img
             src={EndIcon}
             alt="Chegada"
@@ -114,8 +107,6 @@ export default function OverallProgressCard({
               filter: "drop-shadow(0 4px 0 rgba(0,0,0,.08))",
             }}
           />
-
-          {/* Pista (faixa pontilhada) entre as bandeiras */}
           <div
             aria-hidden
             style={{
@@ -128,8 +119,6 @@ export default function OverallProgressCard({
               opacity: 0.9,
             }}
           />
-
-          {/* LANE: container relativo para posicionar o runner em % entre as bandeiras */}
           <div
             className="relative"
             style={{
@@ -137,7 +126,7 @@ export default function OverallProgressCard({
               left: 12 + laneSidePad,
               right: 12 + laneSidePad,
               bottom: 28 + flagSize * 0.2,
-              height: runnerSize, // altura virtual para o runner
+              height: runnerSize, 
             }}
           >
             <img
@@ -159,8 +148,6 @@ export default function OverallProgressCard({
             />
           </div>
         </div>
-
-        {/* Barra de progresso inferior (1/10, etc.) */}
         <div className="mt-4" aria-label="Progresso geral" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
           <div
             style={{

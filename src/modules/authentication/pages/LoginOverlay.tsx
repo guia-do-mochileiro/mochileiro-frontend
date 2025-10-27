@@ -1,4 +1,4 @@
-// src/modules/authentication/pages/LoginOverlay.tsx
+
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
@@ -8,12 +8,12 @@ import WaveImg from "#/modules/authentication/assets/4 - Ondas.png";
 import WaveImgFlower from "#/modules/authentication/assets/10 - OndasFlor.png";
 import { login } from "#/modules/authentication/services/authService";
 
-// Google
+
 import { GoogleLogin } from "@react-oauth/google";
 import type { CredentialResponse } from "@react-oauth/google";
 import { loginWithGoogle } from "#/modules/authentication/services/googleAuthService";
 
-// Toasts
+
 import { toast } from "react-toastify";
 import ErrorToast from "#/components/toasts/ErrorToast";
 import SuccessToast from "#/components/toasts/SuccessToast";
@@ -53,7 +53,7 @@ export default function LoginOverlay() {
     }
   }
 
-  // Google handlers
+  
   function handleGoogleSuccess(credentialResponse: CredentialResponse) {
     const idToken = credentialResponse.credential;
     if (!idToken) {
@@ -74,7 +74,7 @@ export default function LoginOverlay() {
 
         toast(<SuccessToast title="Login realizado!" description={description} />);
 
-        // Vai para o Guide passando o state que o GuidePage vai ler na montagem
+        
         navigate("/guide", {
           replace: true,
           state: { requireAdditionalData: insertAdditionalData },
@@ -106,7 +106,7 @@ export default function LoginOverlay() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
-      {/* Fechar */}
+      
       <motion.button
         aria-label="Fechar"
         onClick={() => navigate("/")}
@@ -118,7 +118,7 @@ export default function LoginOverlay() {
         <X className="h-5 w-5" />
       </motion.button>
 
-      {/* Criar conta */}
+      
       <motion.div
         initial={{ y: -8, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -132,7 +132,7 @@ export default function LoginOverlay() {
         </Button>
       </motion.div>
 
-      {/* Ondas decorativas */}
+      
       <img
         src={WaveImgFlower}
         alt=""
@@ -146,7 +146,7 @@ export default function LoginOverlay() {
         className="pointer-events-none absolute bottom-0 right-[-10%] w-[45%] max-w-none -scale-x-100 select-none opacity-95"
       />
 
-      {/* Conteúdo */}
+      
       <div className="mx-auto flex min-h-screen max-w-[1024px] flex-col items-center justify-center px-4">
         <motion.form
           onSubmit={handleSubmit}
@@ -157,7 +157,7 @@ export default function LoginOverlay() {
         >
           <h1 className="mb-4 text-center text-lg font-semibold text-white">Entrar</h1>
 
-          {/* Email */}
+          
           <label className="mb-2 block text-xs font-semibold text-white/90">Email</label>
           <input
             type="email"
@@ -169,7 +169,7 @@ export default function LoginOverlay() {
             className="mb-3 w-full rounded-md bg-[#3d4a2c] px-3 py-2 text-sm text-white placeholder-white/60 outline-none ring-1 ring-black/10 focus:ring-white/20"
           />
 
-          {/* Senha */}
+          
           <label className="mb-2 block text-xs font-semibold text-white/90">Senha</label>
           <div className="relative">
             <input
@@ -202,7 +202,7 @@ export default function LoginOverlay() {
             </button>
           </div>
 
-          {/* Esqueceu abaixo do input */}
+          
           <div className="mt-1 mb-4 text-right">
             <button
               type="button"
@@ -212,7 +212,7 @@ export default function LoginOverlay() {
             </button>
           </div>
 
-          {/* Entrar */}
+          
           <Button
             type="submit"
             disabled={submitting}
@@ -221,14 +221,14 @@ export default function LoginOverlay() {
             {submitting ? "Entrando..." : "ENTRAR"}
           </Button>
 
-          {/* Divisor OU */}
+          
           <div className="my-4 flex items-center gap-3">
             <div className="h-px flex-1 bg-white/30" />
             <span className="select-none text-xs font-semibold text-white">OU</span>
             <div className="h-px flex-1 bg-white/30" />
           </div>
 
-          {/* Google */}
+          
           <div className="flex w-full justify-center">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}

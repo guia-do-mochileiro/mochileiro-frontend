@@ -17,11 +17,11 @@ export function clearPhaseButtons(listRef: MutableRefObject<mapboxgl.Marker[]>) 
   listRef.current = [];
 }
 
-// ⚠️ Ordem nova (1→4) igual à imagem:
-// 1: Localização e Capital
-// 2: Hidrografia e Bioma
-// 3: Cultura e Sociedade
-// 4: Economia e Desafios
+
+
+
+
+
 const DEFAULT_LABELS: Record<PhaseIndex, string> = {
   1: "LOCALIZAÇÃO E CAPITAL",
   2: "HIDROGRAFIA E BIOMA",
@@ -45,7 +45,7 @@ export function spawnPhaseButtonsForState(opts: {
   const { map, stateCode, listRef, icons, onPhaseClick, labels, locked } = opts;
 
   const spots = STATE_PHASE_SPOTS[stateCode];
-  if (!spots) return; // sem spots => não mostra fases
+  if (!spots) return; 
 
   const getLabel = (i: PhaseIndex) => labels?.[i] ?? DEFAULT_LABELS[i];
   const isLocked = (i: PhaseIndex) => Boolean(locked?.[i]);
@@ -76,7 +76,7 @@ export function spawnPhaseButtonsForState(opts: {
     listRef.current.push(marker);
   });
 
-  // linha pontilhada 1→2→3→4
+  
   const coords: [number, number][] = [1, 2, 3, 4]
     .map((i) => spots[i as PhaseIndex])
     .filter(Boolean)

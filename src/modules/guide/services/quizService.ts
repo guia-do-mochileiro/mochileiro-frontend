@@ -1,6 +1,6 @@
 import { api } from "#/config/apiConfig";
 
-// ===== Tipos =====
+
 export type AlternativeDTO = {
   id: string;
   optionText: string;
@@ -16,9 +16,9 @@ export type QuestionDTO = {
 };
 
 export type PhaseQuizDTO = {
-  id: string;           // phaseId (missionId na sua nomenclatura)
-  name: string;         // nome da fase
-  orderIndex?: number;  // 1..4
+  id: string;           
+  name: string;         
+  orderIndex?: number;  
   questions: QuestionDTO[];
 };
 
@@ -30,7 +30,7 @@ export type SubmitAnswerIn = {
 export type SubmitAnswerOut = {
   questionId: string;
   correctAlternativeId: string;
-  unlockedAchievements: string[]; // pode vir vazio
+  unlockedAchievements: string[]; 
   correct: boolean;
 };
 
@@ -49,7 +49,7 @@ export type ProgressDTO = {
   wrongQuestionIds: string[];
 };
 
-// ===== Helpers =====
+
 function extractMsg(err: any, fallback: string) {
   return (
     err?.response?.data?.message ||
@@ -59,9 +59,9 @@ function extractMsg(err: any, fallback: string) {
   );
 }
 
-// ===== Calls =====
 
-/** Carrega as questões de uma fase (mission/phase id). */
+
+
 export async function getPhaseQuiz(phaseId: string) {
   try {
     const { data } = await api.get<PhaseQuizDTO>(`/api/phases/list-quizzes/${phaseId}`);
@@ -73,7 +73,7 @@ export async function getPhaseQuiz(phaseId: string) {
   }
 }
 
-/** Envia a resposta de uma questão. */
+
 export async function submitAnswer(payload: SubmitAnswerIn) {
   try {
     const { data } = await api.post<SubmitAnswerOut>(`/api/questions/submit-answer`, payload);
@@ -85,7 +85,7 @@ export async function submitAnswer(payload: SubmitAnswerIn) {
   }
 }
 
-/** Consulta o progresso atual da fase (quantas faltam etc). */
+
 export async function getPhaseProgress(phaseId: string) {
   try {
     const { data } = await api.get<ProgressDTO>(`/api/progress/${phaseId}`);
@@ -97,7 +97,7 @@ export async function getPhaseProgress(phaseId: string) {
   }
 }
 
-/** Reseta o progresso do jogador para uma fase específica. */
+
 export async function resetPhaseProgress(phaseId: string) {
   try {
     const { data } = await api.delete<{ id: string; response: string }>(

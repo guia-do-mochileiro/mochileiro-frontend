@@ -1,4 +1,4 @@
-// src/modules/guide/components/achievements/DailyMissionsCard.tsx
+
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -12,14 +12,14 @@ import {
 } from "#/modules/guide/services/achievementsService";
 
 type Props = {
-  /** cor da borda/acento do card */
-  accent?: string; // default: "#9db668"
-  /** cor do fundo do card */
-  cardBg?: string; // default: "#FFFDE1"
-  /** tamanho (px) dos ícones das conquistas/bandeira */
-  iconSize?: number; // default: 28
-  /** altura (px) da barra de progresso */
-  barHeight?: number; // default: 20
+  
+  accent?: string; 
+  
+  cardBg?: string; 
+  
+  iconSize?: number; 
+  
+  barHeight?: number; 
 };
 
 const clamp = (v: number, min = 0, max = 100) => Math.max(min, Math.min(max, v));
@@ -89,7 +89,7 @@ export default function DailyMissionsCard({
   const start = page * pageSize;
   const slice = items.slice(start, start + pageSize);
 
-  // backgrounds das barras (track e fill) com “bolinhas”
+  
   const trackBg = useMemo(
     () =>
       `
@@ -109,7 +109,6 @@ export default function DailyMissionsCard({
 
   return (
     <div>
-      {/* CHIP “MISSÕES” */}
       <div
         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 font-semibold text-white shadow mb-3"
         style={{ backgroundColor: accent }}
@@ -124,7 +123,7 @@ export default function DailyMissionsCard({
         style={{
           background: cardBg,
           border: `6px solid ${accent}`,
-          padding: "14px 14px 44px", // espaço para os botões no rodapé
+          padding: "14px 14px 44px", 
         }}
       >
         {loading ? (
@@ -156,7 +155,6 @@ export default function DailyMissionsCard({
                       gridTemplateColumns: `${iconSize}px 1fr ${iconSize}px`,
                     }}
                   >
-                    {/* ícone da conquista (esquerda) */}
                     <img
                       src={iconSrc}
                       alt=""
@@ -169,8 +167,6 @@ export default function DailyMissionsCard({
                         filter: "drop-shadow(0 4px 0 rgba(0,0,0,.12))",
                       }}
                     />
-
-                    {/* conteúdo */}
                     <div>
                       <div
                         className="font-extrabold"
@@ -230,8 +226,6 @@ export default function DailyMissionsCard({
                         </div>
                       </div>
                     </div>
-
-                    {/* bandeira (direita) */}
                     <img
                       src={Bandeira}
                       alt="flag"
@@ -248,8 +242,6 @@ export default function DailyMissionsCard({
                 );
               })}
             </ul>
-
-            {/* Controles de navegação por grupos (3 a 3) */}
             <div className="absolute bottom-2 right-2 flex items-center gap-2">
               <button
                 type="button"

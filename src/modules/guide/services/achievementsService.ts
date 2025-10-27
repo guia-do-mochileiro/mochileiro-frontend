@@ -27,7 +27,7 @@ export type AchievementPage = {
   totalPages: number;
   totalElements: number;
   size: number;
-  number: number; // página atual (0-index)
+  number: number; 
   sort?: {
     empty: boolean;
     sorted: boolean;

@@ -1,6 +1,6 @@
 import { api } from "#/config/apiConfig";
 
-/** Enum de avatar que o backend retorna (mesmo usado no ProfileModal) */
+
 export type AvatarKey =
   | "AVATAR_1" | "AVATAR_2" | "AVATAR_3" | "AVATAR_4"
   | "AVATAR_5" | "AVATAR_6" | "AVATAR_7" | "AVATAR_8";
@@ -23,7 +23,7 @@ export type RankingPage = {
   totalElements: number;
   first: boolean;
   last: boolean;
-  number: number; // página atual (0-index)
+  number: number; 
   size: number;
   numberOfElements: number;
 };
@@ -48,13 +48,13 @@ export async function getRanking(
   try {
     const { page, size, sort, search } = params;
 
-    // Monte aqui o nome do parâmetro aceito pelo backend para busca.
+    
     const queryParams: Record<string, any> = {};
     if (page !== undefined) queryParams.page = page;
     if (size !== undefined) queryParams.size = size;
     if (sort) queryParams.sort = sort;
     if (search && search.trim().length > 0) {
-      queryParams.username = search.trim(); // <- troque para 'q' se sua API exigir
+      queryParams.username = search.trim(); 
     }
 
     const { data } = await api.get<RankingPage>("/api/users/ranking", { params: queryParams });

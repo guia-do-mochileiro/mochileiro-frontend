@@ -1,12 +1,12 @@
-// src/modules/guide/components/patents/PromotionCard.tsx
+
 import { useEffect, useMemo, useState } from "react";
 
-// chip/ícone
+
 import IconPromocao from "#/modules/guide/assets/icons/4 - PatentsIcon.png";
-// cadeado
+
 import LockIcon from "#/modules/guide/assets/achievements/0 - Bloqueio.png";
 
-// escudos
+
 import Pioneiro from "#/modules/guide/assets/patents/1 - Pioneiro.png";
 import Explorador from "#/modules/guide/assets/patents/2 - Explorador.png";
 import Navegador from "#/modules/guide/assets/patents/3 - Navegador.png";
@@ -21,17 +21,17 @@ import {
 } from "#/modules/guide/services/patentsService";
 
 type Props = {
-  /** cor da borda/acento (chip e borda) */
-  accent?: string; // default "#9db668"
-  /** cor do fundo do card */
-  cardBg?: string; // default "#FFFDE1"
-  /** tamanho dos escudos em px */
-  shieldSize?: number; // default 90
-  /** altura da barra de progresso */
-  barHeight?: number; // default 20
+  
+  accent?: string; 
+  
+  cardBg?: string; 
+  
+  shieldSize?: number; 
+  
+  barHeight?: number; 
 };
 
-// utils
+
 const clamp = (v: number, min = 0, max = 100) => Math.max(min, Math.min(max, v));
 const pct = (value: number, goal: number) =>
   clamp(Math.round((100 * value) / Math.max(1, goal)));
@@ -43,9 +43,9 @@ const NAME_TO_ICON: Record<string, string> = {
   AVENTUREIRO: Aventureiro,
   VIAJANTE: Viajante,
   "GUARDIÃO": Guardiao,
-  GUARDIAO: Guardiao, // fallback sem acento
+  GUARDIAO: Guardiao, 
   "LENDÁRIO": Lendario,
-  LENDARIO: Lendario, // fallback sem acento
+  LENDARIO: Lendario, 
 };
 
 function iconFor(name?: string) {
@@ -64,13 +64,13 @@ export default function PromotionCard({
   const [err, setErr] = useState<string | null>(null);
   const [items, setItems] = useState<PatentProgress[]>([]);
 
-  // carrega do endpoint /api/patents
+  
   async function load() {
     setLoading(true);
     setErr(null);
     try {
       const list = await fetchPatents();
-      // ordena pelo requiredPoints crescente (garante sequência correta)
+      
       const ordered = [...list].sort(
         (a, b) => (a.requiredPoints ?? 0) - (b.requiredPoints ?? 0)
       );
@@ -87,7 +87,7 @@ export default function PromotionCard({
     load();
   }, []);
 
-  // calcula atual, próxima e progresso
+  
   const {
     current,
     next,
@@ -112,10 +112,10 @@ export default function PromotionCard({
       };
     }
 
-    // a API repete currentPoints em todos os itens; pegue de qualquer um
+    
     const pointsNow = Number(items[0]?.currentPoints ?? 0);
 
-    // índice da maior patente alcançada (por pontos OU por unlocked)
+    
     let idx = 0;
     for (let i = 0; i < items.length; i++) {
       const it = items[i];
@@ -146,7 +146,7 @@ export default function PromotionCard({
     };
   }, [items]);
 
-  // backgrounds da barra (iguais ao DailyMissionsCard)
+  
   const trackBg = useMemo(
     () => `
       radial-gradient(circle at 12px 50%, rgba(75,40,2,.30) 5px, transparent 6px) repeat-x,
@@ -164,7 +164,7 @@ export default function PromotionCard({
 
   return (
     <div>
-      {/* CHIP “PROMOÇÃO” */}
+      
       <div
         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 font-semibold text-white shadow mb-3"
         style={{ backgroundColor: accent }}
@@ -174,7 +174,7 @@ export default function PromotionCard({
         <span>PONTOS</span>
       </div>
 
-      {/* CARD */}
+      
       <section
         className="rounded-2xl shadow"
         style={{
@@ -199,12 +199,12 @@ export default function PromotionCard({
           <div className="text-sm text-[#6b5a2a] px-1 py-2">Sem patentes por aqui.</div>
         ) : (
           <>
-            {/* Faixa com escudos e linha pontilhada */}
+            
             <div
               className="relative rounded-2xl bg-white px-4 py-6"
               style={{ boxShadow: "inset 0 0 0 2px rgba(0,0,0,.04)" }}
             >
-              {/* linha pontilhada entre eles */}
+              
               <div
                 aria-hidden
                 className="absolute left-0 right-0"
@@ -219,7 +219,7 @@ export default function PromotionCard({
               />
 
               <div className="flex items-center justify-between gap-4">
-                {/* atual */}
+                
                 <div className="relative grid place-items-center">
                   <img
                     src={iconFor(current?.name)}
@@ -235,7 +235,7 @@ export default function PromotionCard({
                   />
                 </div>
 
-                {/* próxima (ou a mesma quando já é a última) */}
+                
                 <div className="relative grid place-items-center">
                   <img
                     src={iconFor(next?.name)}
@@ -252,7 +252,7 @@ export default function PromotionCard({
                     }}
                   />
 
-                  {/* cadeado quando ainda não atingiu a próxima */}
+                  
                   {!atMax && (
                     <img
                       src={LockIcon}
@@ -270,7 +270,7 @@ export default function PromotionCard({
               </div>
             </div>
 
-            {/* título + barra */}
+            
             <div className="mt-3 text-center">
               <div
                 className="font-extrabold"

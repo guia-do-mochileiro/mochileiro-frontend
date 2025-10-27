@@ -1,4 +1,4 @@
-// src/modules/authentication/services/googleAuthService.ts
+
 import { api } from "#/config/apiConfig";
 
 const API_URL_GOOGLE = "/api/auth/login/google";
@@ -23,11 +23,11 @@ export async function loginWithGoogle(idToken: string): Promise<GoogleLoginRespo
         ? (data as any).insertAdditionalData
         : false;
 
-    // cookies padrão
+    
     setCookie("authToken", data.token);
     setCookie("userId", data.id);
 
-    // 👇 grava a flag que o GuidePage lê
+    
     setCookie("insertAdditionalDataRequired", insertAdditionalData ? "1" : "0", 1);
 
     return {

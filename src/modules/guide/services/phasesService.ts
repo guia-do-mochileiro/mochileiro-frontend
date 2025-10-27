@@ -1,4 +1,4 @@
-// src/modules/guide/services/phasesService.ts
+
 import { api } from "#/config/apiConfig";
 
 export type QuizAlternative = {
@@ -10,7 +10,7 @@ export type QuizAlternative = {
 export type QuizQuestion = {
   id: string;
   questionText: string;
-  questionType: string; // "MULTIPLA_ESCOLHA", etc.
+  questionType: string; 
   bnccCode?: string;
   alternatives: QuizAlternative[];
 };

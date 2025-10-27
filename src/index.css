@@ -1,16 +1,16 @@
-/* === Tailwind (modo clássico v3) === */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Altura base */
+
 html, body, #root { height: 100%; }
 
 /* =========================================================
    COMPONENTES ESPECÍFICOS
    ========================================================= */
 @layer components {
-  /* --- Pins do Mapbox --- */
+  
   .map-pin-round {
     @apply flex h-9 w-9 items-center justify-center rounded-full
            ring-2 ring-slate-900 bg-green-500 text-slate-900
@@ -23,12 +23,12 @@ html, body, #root { height: 100%; }
            font-extrabold shadow-lg cursor-pointer hover:brightness-95;
   }
 
-  /* Deixa o botão nativo de revelar senha (Edge) branco */
+  
 input[type="password"]::-ms-reveal {
   filter: invert(1) brightness(200%);
 }
 
-/* Remove qualquer fundo estranho do botão nativo (opcional) */
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   background: transparent;

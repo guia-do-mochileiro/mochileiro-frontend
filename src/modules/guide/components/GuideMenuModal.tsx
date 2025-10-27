@@ -1,4 +1,4 @@
-// src/modules/guide/components/GuideMenuModal.tsx
+
 import { useEffect, useLayoutEffect, useState } from "react";
 import { X } from "lucide-react";
 import { logout } from "#/utils/auth";
@@ -38,7 +38,7 @@ export default function GuideMenuModal({
     }
   }, [open, initialPhase]);
 
-  // posicionamento do popover
+  
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const width = 220;
 
@@ -64,7 +64,7 @@ export default function GuideMenuModal({
 
   if (!open) return null;
 
-  // Popover de menu (quando há âncora e phase === "menu")
+  
   if (phase === "menu" && pos) {
     return (
       <>
@@ -104,7 +104,7 @@ export default function GuideMenuModal({
     );
   }
 
-  // Modal central de confirmação
+  
   return (
     <div
       className="fixed inset-0 z-[100] grid place-items-center bg-black/50 backdrop-blur-[1px] p-4"

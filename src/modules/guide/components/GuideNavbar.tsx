@@ -1,4 +1,4 @@
-// src/modules/guide/components/GuideNavbar.tsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu } from "lucide-react";
@@ -9,13 +9,13 @@ import AchievementsIcon from "#/modules/guide/assets/icons/3 - Achievementscon.p
 import PatentsIcon from "#/modules/guide/assets/icons/4 - PatentsIcon.png";
 import GuideMenuModal from "#/modules/guide/components/GuideMenuModal";
 
-// ✅ pega dados do usuário (inclui avatar)
+
 import { fetchMe } from "#/modules/guide/services/profile/userService";
 
-// 🔊 sons
+
 import { useSfx } from "#/hooks/useSfx";
 
-// Avatares (mesmo padrão do ProfileModal/Ranking)
+
 import Avatar1 from "#/modules/guide/assets/avatars/Avatar1.png";
 import Avatar2 from "#/modules/guide/assets/avatars/Avatar2.png";
 import Avatar3 from "#/modules/guide/assets/avatars/Avatar3.png";
@@ -40,7 +40,7 @@ const tabs = [
   { key: "patents", label: "PATENTES", icon: PatentsIcon, to: "/guide/patentes" },
 ] as const;
 
-// ---- helpers de avatar (mesmo contrato do backend: "AVATAR_1" ... "AVATAR_8")
+
 type AvatarKey =
   | "AVATAR_1" | "AVATAR_2" | "AVATAR_3" | "AVATAR_4"
   | "AVATAR_5" | "AVATAR_6" | "AVATAR_7" | "AVATAR_8";
@@ -66,15 +66,15 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
   const [menuOpen, setMenuOpen] = useState(false);
   const menuBtnRef = useRef<HTMLButtonElement | null>(null);
 
-  // estado para avatar/nome do usuário logado
+  
   const [meName, setMeName] = useState<string | undefined>(userName);
   const [avatarKey, setAvatarKey] = useState<string | null>(null);
   const [loadingMe, setLoadingMe] = useState<boolean>(false);
 
-  // 🔊 hook de efeitos sonoros
+  
   const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
 
-  // carrega o "me" uma vez
+  
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -85,7 +85,7 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
         setMeName((prev) => prev || me.username || undefined);
         setAvatarKey(me.avatar ?? null);
       } catch {
-        // se falhar, deixa o fallback (bolinha gradiente)
+        
       } finally {
         if (mounted) setLoadingMe(false);
       }
@@ -110,7 +110,7 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
                   <NavLink
                     key={t.key}
                     to={t.to}
-                    onClick={playClick} // 🔊 som ao trocar de guia
+                    onClick={playClick} 
                     className={[
                       "flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold transition",
                       isActive ? "bg-[#7a9456] text-white shadow" : " text-[#9db668]",
@@ -129,7 +129,7 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
                 ref={menuBtnRef}
                 type="button"
                 onClick={() => {
-                  playClick();         // 🔊 hamburger
+                  playClick();         
                   onMenuClick?.();
                   setMenuOpen(true);
                 }}
@@ -139,11 +139,11 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
                 <Menu className="h-5 w-5" />
               </button>
 
-              {/* ✅ Botão do avatar do usuário */}
+              
               <button
                 type="button"
                 onClick={() => {
-                  playClick();         // 🔊 perfil
+                  playClick();         
                   onAvatarClick?.();
                 }}
                 aria-label={ariaAvatar}
@@ -166,12 +166,12 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
         </div>
       </div>
 
-      {/* Modal controla menu (popover) e confirmação */}
+      
       <GuideMenuModal
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         onProfile={() => {
-          // abra seu popup de perfil aqui, se quiser
+          
         }}
         anchorEl={menuBtnRef.current ?? undefined}
       />

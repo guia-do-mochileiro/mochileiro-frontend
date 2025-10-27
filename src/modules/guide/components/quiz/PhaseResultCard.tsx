@@ -1,14 +1,14 @@
-// src/modules/guide/components/quiz/PhaseResultCard.tsx
+
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Menu as MenuIcon } from "lucide-react";
 
-// 🎵 SFX
+
 import { useSfx } from "#/hooks/useSfx";
 
-// Fundo de confetes
+
 import PatentBackdrop from "#/modules/guide/assets/patents/0 - back.png";
 
-// Patentes (1..7)
+
 import PatentPioneiro from "#/modules/guide/assets/patents/1 - Pioneiro.png";
 import PatentExplorador from "#/modules/guide/assets/patents/2 - Explorador.png";
 import PatentNavegador from "#/modules/guide/assets/patents/3 - Navegador.png";
@@ -17,26 +17,26 @@ import PatentViajante from "#/modules/guide/assets/patents/5 - Viajante.png";
 import PatentGuardiao from "#/modules/guide/assets/patents/6 - Guardião.png";
 import PatentLendario from "#/modules/guide/assets/patents/7 - Lendário.png";
 
-// Service para buscar as patentes do usuário
+
 import { fetchPatents, type PatentName, type PatentProgress } from "#/modules/guide/services/patentsService";
 
 type Props = {
   passed: boolean;
   phaseName?: string;
 
-  /** mostramos, mas sem emojis; com ícones da lucide */
+  
   correct?: number;
   wrong?: number;
 
-  /** callbacks dos botões */
+  
   onMenu?: () => void;
   onNext?: () => void;
 
-  /** permitir trocar o ícone da patente via prop (tem prioridade sobre o fetch) */
+  
   patentIconSrc?: string;
 };
 
-// Mapa de nome -> imagem
+
 const PATENT_ICON_MAP: Record<PatentName, string> = {
   PIONEIRO: PatentPioneiro,
   EXPLORADOR: PatentExplorador,
@@ -47,7 +47,7 @@ const PATENT_ICON_MAP: Record<PatentName, string> = {
   "LENDÁRIO": PatentLendario,
 };
 
-// Ordem oficial (igual a do backend, do menor para o maior)
+
 const ORDERED_NAMES: PatentName[] = [
   "PIONEIRO",
   "EXPLORADOR",
@@ -65,19 +65,19 @@ export default function PhaseResultCard({
   onNext,
   patentIconSrc,
 }: Props) {
-  const { playClick } = useSfx(); // usamos o padrão do hook (geral do app)
+  const { playClick } = useSfx(); 
 
   const [autoIcon, setAutoIcon] = useState<string | null>(null);
   const effectiveIcon = useMemo(() => patentIconSrc ?? autoIcon ?? PatentPioneiro, [patentIconSrc, autoIcon]);
 
-  // Busca a patente mais alta desbloqueada se não vier via prop
+  
   useEffect(() => {
-    if (patentIconSrc) return; // prioridade para a prop
+    if (patentIconSrc) return; 
     let mounted = true;
 
     (async () => {
       try {
-        const list = await fetchPatents(); // já vem na ordem correta (menor -> maior)
+        const list = await fetchPatents(); 
         const highest = resolveHighestUnlocked(list);
         const icon = highest ? PATENT_ICON_MAP[highest as PatentName] ?? PatentPioneiro : PatentPioneiro;
         if (mounted) setAutoIcon(icon);
@@ -94,18 +94,18 @@ export default function PhaseResultCard({
   function resolveHighestUnlocked(list: PatentProgress[]): PatentName | null {
     if (!Array.isArray(list) || list.length === 0) return null;
 
-    // O backend já entrega na ordem; para garantir, percorremos de trás pra frente.
+    
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i];
       if (p?.unlocked) {
-        // tenta casar exatamente com nossos nomes conhecidos
+        
         const name = (p.name || "").toUpperCase() as PatentName;
         if (ORDERED_NAMES.includes(name)) return name;
         break;
       }
     }
 
-    // fallback: checa por requiredPoints maior entre unlocked
+    
     const unlocked = list.filter((p) => p.unlocked);
     if (unlocked.length) {
       const top = unlocked.reduce((acc, cur) =>
@@ -129,7 +129,7 @@ export default function PhaseResultCard({
 
   return (
     <div className="mx-auto w-full max-w-3xl rounded-2xl border border-[#dcd7a8] bg-[#FFFDEB] p-6 sm:p-8 text-center shadow">
-      {/* Patente grande com fundo de confetes */}
+      
       <div className="relative mx-auto h-[220px] w-[220px] sm:h-[260px] sm:w-[260px]">
         <img
           src={PatentBackdrop}
@@ -157,7 +157,7 @@ export default function PhaseResultCard({
           : `Você completou a fase${phaseName ? ` ${phaseName}` : ""}.`}
       </p>
 
-      {/* Ações: MENU e PRÓXIMA FASE */}
+      
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <button
           type="button"

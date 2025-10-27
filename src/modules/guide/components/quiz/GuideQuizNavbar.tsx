@@ -1,4 +1,4 @@
-// src/modules/guide/components/quiz/GuideQuizNavbar.tsx
+
 import { ChevronLeft } from "lucide-react";
 import { useSfx } from "#/hooks/useSfx";
 

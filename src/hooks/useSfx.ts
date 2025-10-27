@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 
-// Sons
+
 import sfxAchievement from "#/sounds/ConquistaAdiquirida.wav";
 import sfxCorrect     from "#/sounds/RespostaCerta.mp3";
 import sfxWrong       from "#/sounds/RespostaErrada.ogg";
@@ -8,9 +8,9 @@ import sfxFinish      from "#/sounds/VitoriaFimFase.wav";
 import sfxClick       from "#/sounds/Click1.wav";
 
 type Options = {
-  volume?: number;       // volume padrão (0..1) para todos
+  volume?: number;       
   enabled?: boolean;
-  clickVolume?: number;  // ⬅ novo: volume só do click (0..1)
+  clickVolume?: number;  
 };
 
 function makeAudio(src: string, volume: number) {

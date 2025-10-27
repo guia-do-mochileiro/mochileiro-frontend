@@ -1,4 +1,4 @@
-// src/modules/guide/pages/GuidePage.tsx
+
 import { useEffect, useState, useCallback } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import GuideNavbar from "../components/GuideNavbar";
@@ -17,12 +17,12 @@ export default function GuidePage() {
     pathname === "/guide"
       ? "map"
       : pathname.startsWith("/guide/ranking")
-      ? "ranking"
-      : pathname.startsWith("/guide/conquistas")
-      ? "achievements"
-      : pathname.startsWith("/guide/patentes")
-      ? "patents"
-      : "map";
+        ? "ranking"
+        : pathname.startsWith("/guide/conquistas")
+          ? "achievements"
+          : pathname.startsWith("/guide/patentes")
+            ? "patents"
+            : "map";
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [forceEditMode, setForceEditMode] = useState(false);
@@ -59,7 +59,7 @@ export default function GuidePage() {
       const url = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       window.history.replaceState({}, "", url);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   useEffect(() => {
@@ -103,10 +103,7 @@ export default function GuidePage() {
         </section>
 
         <aside className="flex flex-col gap-4">
-          {/* TipCard está presente em todas as guias */}
-<TipCard/>
-
-          {/* Alterna conforme a aba */}
+          <TipCard />
           {active === "patents" ? (
             <PromotionCard />
           ) : (

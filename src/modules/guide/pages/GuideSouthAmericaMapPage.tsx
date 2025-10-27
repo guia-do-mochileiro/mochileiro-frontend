@@ -1,4 +1,4 @@
-// src/modules/guide/pages/GuideSouthAmericaMapPage.tsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import type { LngLatBoundsLike } from "mapbox-gl";
@@ -26,17 +26,17 @@ import {
   getStateIdByLocal,
 } from "#/modules/guide/components/map/constants/northBackend";
 
-// Services
+
 import { getMissionsByStateId } from "#/modules/guide/services/regionsService";
 import { getPhaseProgress, resetPhaseProgress } from "#/modules/guide/services/quizService";
 
-// Ícones das fases
+
 import Phase1Icon from "#/modules/guide/assets/phases/1.png";
 import Phase2Icon from "#/modules/guide/assets/phases/2.png";
 import Phase3Icon from "#/modules/guide/assets/phases/3.png";
 import Phase4Icon from "#/modules/guide/assets/phases/4.png";
 
-// 🔒 Ícone de bloqueio para as outras regiões
+
 import LockImg from "#/modules/guide/assets/achievements/0 - Bloqueio.png";
 
 type Level = "country" | "region" | "state";
@@ -81,7 +81,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
   const backCtrl = useRef<BackControl | null>(null);
   const stageBadge = useRef<StageBadgeControl | null>(null);
 
-  // 🔒 marcadores de bloqueio das outras regiões
+  
   const lockMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   const missionsByStateRef = useRef<Record<string, Mission[]>>({});
@@ -90,7 +90,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
   const levelRef = useRef<Level>("country");
 
   const isTransitioning = useRef(false);
-  const isOpeningPhaseRef = useRef(false); // evita cliques múltiplos no botão da fase
+  const isOpeningPhaseRef = useRef(false); 
 
   const PHASE_META = {
     1: { color: "green" as const, icon: Phase1Icon, label: PHASE_TITLES[1] },
@@ -103,7 +103,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     levelRef.current = level;
   }, [level]);
 
-  // ---- helpers básicos de transição/gestos ----
+  
   function beginTransition() {
     isTransitioning.current = true;
     backCtrl.current?.setVisible(false);
@@ -161,7 +161,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     }
   }
 
-  // ---- mapeamentos/ids ----
+  
   function getBackendStateId(stateCode: RegionNorthStateId): string | null {
     return getStateIdByLocal(stateCode as any) ?? null;
   }
@@ -188,7 +188,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     return byTitle?.id ?? null;
   }
 
-  /** Consulta progresso das 4 fases e devolve quais botões ficam bloqueados. */
+  
   async function buildLockedForMissions(missions: Mission[]) {
     const idsByIndex: Record<1 | 2 | 3 | 4, string | null> = { 1: null, 2: null, 3: null, 4: null };
     missions.forEach((m) => {
@@ -211,14 +211,14 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     );
 
     return {
-      1: false, // fase 1 sempre liberada
+      1: false, 
       2: !(prog[1]?.passed === true),
       3: !(prog[2]?.passed === true),
       4: !(prog[3]?.passed === true),
     } as Record<1 | 2 | 3 | 4, boolean>;
   }
 
-  /** Abre uma fase: se já concluída (`passed`), reseta antes de navegar. */
+  
   const handleOpenPhase = async (stateId: RegionNorthStateId, idx: 1 | 2 | 3 | 4) => {
     if (isOpeningPhaseRef.current) return;
     const missionId = resolveMissionId(stateId, idx);
@@ -249,7 +249,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     });
   };
 
-  // ---- navegação por nível do mapa ----
+  
   function goToCountry() {
     if (!map.current || isTransitioning.current) return;
     beginTransition();
@@ -266,7 +266,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
 
-    // prepara os locks (mostraremos ao final do movimento)
+    
     ensureLockMarkers();
     showLockMarkers(false);
 
@@ -292,7 +292,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     });
 
     showRegionChip(false);
-    showLockMarkers(false); // some ao entrar em região
+    showLockMarkers(false); 
     clearStateChips();
     clearPhaseButtons(phaseMarkersRef);
 
@@ -395,7 +395,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
   }
 
 
-  // ---- chips de UI (NORTE) ----
+  
   function showRegionChip(visible: boolean) {
     if (!map.current) return;
     if (!chipRegionMarker.current) {
@@ -404,7 +404,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
         variant: "region",
         onClick: () => {
           if (isTransitioning.current) return;
-          playClick();            // 🔊 clique
+          playClick();            
           goToRegionNorte();
         },
       });
@@ -416,18 +416,18 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     (chipRegionMarker.current.getElement() as HTMLElement).style.display = visible ? "flex" : "none";
   }
 
-  // ---- marcadores de bloqueio (outras regiões) ----
-  // centros aproximados das regiões: Nordeste, Centro-Oeste, Sudeste, Sul
+  
+  
   const OTHER_REGIONS_LOCKS: Array<{ id: "NE" | "CO" | "SE" | "S"; center: [number, number] }> = [
-    { id: "NE", center: [-42.0, -8.0] },   // Nordeste
-    { id: "CO", center: [-53.5, -17.0] },  // Centro-Oeste
-    { id: "SE", center: [-47.0, -20.5] },  // Sudeste
-    { id: "S", center: [-51.5, -27.5] },  // Sul
+    { id: "NE", center: [-42.0, -8.0] },   
+    { id: "CO", center: [-53.5, -17.0] },  
+    { id: "SE", center: [-47.0, -20.5] },  
+    { id: "S", center: [-51.5, -27.5] },  
   ];
 
   function ensureLockMarkers() {
     if (!map.current) return;
-    if (lockMarkersRef.current.length) return; // já criados
+    if (lockMarkersRef.current.length) return; 
     OTHER_REGIONS_LOCKS.forEach((r) => {
       const el = document.createElement("div");
       el.style.display = "grid";
@@ -452,7 +452,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
         .setLngLat(r.center)
         .addTo(map.current!);
 
-      // não clicável
+      
       (mk.getElement() as HTMLElement).style.pointerEvents = "none";
 
       lockMarkersRef.current.push(mk);
@@ -488,7 +488,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
         variant: "state",
         onClick: () => {
           if (isTransitioning.current) return;
-          playClick();            // 🔊 clique
+          playClick();            
           goToState(id);
         },
       });
@@ -500,7 +500,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
     });
   }
 
-  // ---- mount/unmount do mapa ----
+  
   useEffect(() => {
     (async () => {
       await ensureNorthIdsLoaded();
@@ -523,7 +523,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
       stageBadge.current = new StageBadgeControl();
       m.addControl(stageBadge.current as any, "bottom-left");
 
-      // helper: deve mostrar o chip/locks?
+      
       const shouldShowRegionUI = () => {
         if (levelRef.current !== "country") return false;
         const soft = new mapboxgl.LngLatBounds(softBoundsPair);
@@ -540,7 +540,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
       };
       m.on("dragend", onDragEnd);
 
-      // esconder enquanto move; mostrar quando parar e estiver focado no Brasil
+      
       const onMoveStart = () => {
         if (levelRef.current === "country") {
           showRegionChip(false);
@@ -577,7 +577,7 @@ const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
           });
           backCtrl.current?.setVisible(false);
 
-          // prepara locks e mostra quando terminar o movimento
+          
           ensureLockMarkers();
           showLockMarkers(false);
 

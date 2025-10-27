@@ -1,4 +1,4 @@
-// src/modules/guide/components/ProfileModal.tsx
+
 import { useEffect, useRef, useState, useMemo } from "react";
 import {
   X,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { fetchMe, updateMe, type Gender } from "#/modules/guide/services/profile/userService";
 
-// Avatares (8 arquivos)
+
 import Avatar1 from "#/modules/guide/assets/avatars/Avatar1.png";
 import Avatar2 from "#/modules/guide/assets/avatars/Avatar2.png";
 import Avatar3 from "#/modules/guide/assets/avatars/Avatar3.png";
@@ -22,7 +22,7 @@ import Avatar6 from "#/modules/guide/assets/avatars/Avatar6.png";
 import Avatar7 from "#/modules/guide/assets/avatars/Avatar7.png";
 import Avatar8 from "#/modules/guide/assets/avatars/Avatar8.png";
 
-// Toasts
+
 import { toast } from "react-toastify";
 import SuccessToast from "#/components/toasts/SuccessToast";
 import ErrorToast from "#/components/toasts/ErrorToast";
@@ -30,9 +30,9 @@ import ErrorToast from "#/components/toasts/ErrorToast";
 type Props = {
   open: boolean;
   onClose: () => void;
-  /** quando true, o modal já abre em modo edição */
+  
   forceEditMode?: boolean;
-  /** quando true, desabilita qualquer tentativa de fechar (sem X e sem Esc) */
+  
   disableClose?: boolean;
 };
 
@@ -48,7 +48,7 @@ const AVATAR_ENUMS = [
 ] as const;
 const AVATAR_SRCS = [Avatar1, Avatar2, Avatar3, Avatar4, Avatar5, Avatar6, Avatar7, Avatar8] as const;
 
-// helpers de data
+
 function toBRFromISO(iso?: string | null): string {
   if (!iso) return "";
   const [y, m, d] = iso.split("-");
@@ -74,7 +74,7 @@ export default function ProfileModal({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // dados
+  
   const [userId, setUserId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -82,11 +82,11 @@ export default function ProfileModal({
   const [gender, setGender] = useState<Gender | "">("");
   const [genderOpen, setGenderOpen] = useState(false);
 
-  // avatar
+  
   const [avatarKey, setAvatarKey] = useState<(typeof AVATAR_ENUMS)[number]>("AVATAR_1");
-  const [filter, setFilter] = useState<"ALL" | "BOYS" | "GIRLS">("ALL"); // atalhos de faixa
+  const [filter, setFilter] = useState<"ALL" | "BOYS" | "GIRLS">("ALL"); 
 
-  // snapshot para cancelar
+  
   const snapshot = useRef({
     name: "",
     email: "",
@@ -95,31 +95,31 @@ export default function ProfileModal({
     avatarKey: "AVATAR_1" as (typeof AVATAR_ENUMS)[number],
   });
 
-  // índice atual no array completo (0..7)
+  
   const currentIndex = useMemo(
     () => Math.max(0, AVATAR_ENUMS.indexOf(avatarKey)),
     [avatarKey]
   );
 
-  // lista filtrada de índices conforme atalho
+  
   const filteredIndexes = useMemo(() => {
     if (filter === "ALL") return AVATAR_ENUMS.map((_, i) => i);
     if (filter === "BOYS") return [0, 1, 2, 3];
-    return [4, 5, 6, 7]; // GIRLS
+    return [4, 5, 6, 7]; 
   }, [filter]);
 
-  // garante que o currentIndex sempre pertença ao filtro escolhido
+  
   useEffect(() => {
     if (!filteredIndexes.includes(currentIndex)) {
       const first = filteredIndexes[0] ?? 0;
       setAvatarKey(AVATAR_ENUMS[first]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [filter]);
 
   const showAvatarSrc = AVATAR_SRCS[currentIndex];
 
-  // abrir => carregar do back
+  
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -131,7 +131,7 @@ export default function ProfileModal({
         setBirthDateBR(toBRFromISO(me.birthDate));
         setGender((me.gender ?? "") as Gender | "");
 
-        // avatar do back (enum); se vier algo fora, cai para AVATAR_1
+        
         const idx = me.avatar ? AVATAR_ENUMS.indexOf(me.avatar as any) : -1;
         setAvatarKey(idx >= 0 ? AVATAR_ENUMS[idx] : "AVATAR_1");
 
@@ -154,10 +154,10 @@ export default function ProfileModal({
       .finally(() => setLoading(false));
   }, [open]);
 
-  // abre/fecha => normaliza estado (e respeita forceEditMode/disableClose)
+  
   useEffect(() => {
     if (!open) {
-      // fechou: volta para visualização e restaura o último estado salvo
+      
       setIsEditing(false);
       setGenderOpen(false);
       setFilter("ALL");
@@ -169,13 +169,13 @@ export default function ProfileModal({
       return;
     }
 
-    // abriu: começa em visualização ou já em edição (quando forçado)
+    
     setIsEditing(!!forceEditMode);
     setGenderOpen(false);
     setFilter("ALL");
   }, [open, forceEditMode]);
 
-  // bloqueia fechar via ESC quando disableClose=true
+  
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -188,7 +188,7 @@ export default function ProfileModal({
     return () => window.removeEventListener("keydown", onKeyDown, { capture: true } as any);
   }, [open, disableClose]);
 
-  // date
+  
   const datePickerRef = useRef<HTMLInputElement | null>(null);
   const handleBirthTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
@@ -206,7 +206,7 @@ export default function ProfileModal({
     setBirthDateBR(toBRFromISO(iso));
   };
 
-  // editar/cancelar/salvar
+  
   function onEdit() {
     snapshot.current = { name, email, birth: birthDateBR, gender, avatarKey };
     setIsEditing(true);
@@ -220,7 +220,7 @@ export default function ProfileModal({
     setIsEditing(false);
   }
 
-    // helper para apagar o cookie quando concluir os dados adicionais
+    
   function clearAdditionalDataCookie() {
     document.cookie =
       "insertAdditionalDataRequired=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax";
@@ -244,14 +244,14 @@ export default function ProfileModal({
 
       toast(<SuccessToast title="Perfil atualizado!" description="Suas informações foram salvas." />);
 
-      // snapshot e sai do modo edição
+      
       snapshot.current = { name, email, birth: birthDateBR, gender, avatarKey };
       setIsEditing(false);
 
-      // ✅ Se estava obrigatório, libera o fechamento:
+      
       if (disableClose) {
-        clearAdditionalDataCookie(); // não volta a obrigar após refresh
-        // avisa o GuidePage para setar disableClose=false
+        clearAdditionalDataCookie(); 
+        
         window.dispatchEvent(new CustomEvent("additional-data-completed"));
       }
     } catch (e: any) {
@@ -262,7 +262,7 @@ export default function ProfileModal({
     }
   }
 
-  // ui helpers
+  
   const readOnly = !isEditing || loading || saving;
   const stepAvatar = (dir: -1 | 1) => {
     const list = filteredIndexes;
@@ -280,7 +280,7 @@ export default function ProfileModal({
       aria-modal="true"
     >
       <div className="relative w-full max-w-2xl rounded-[28px] bg-[#9db668] p-6 md:p-8 shadow-2xl">
-        {/* Fechar */}
+        
         {!disableClose && (
           <button
             type="button"
@@ -293,16 +293,16 @@ export default function ProfileModal({
           </button>
         )}
 
-        {/* Avatar (+ controles somente em edição) */}
+        
         <div className="mb-6 mt-2 grid place-items-center gap-3">
           {!isEditing ? (
-            // --- Visualização: apenas a foto atual ---
+            
             <div className="grid h-28 w-28 place-items-center overflow-hidden rounded-full ring-4 ring-white/50 bg-white shadow">
               <img src={showAvatarSrc} alt="Avatar atual" className="h-24 w-24 object-contain" />
             </div>
           ) : (
             <>
-              {/* --- Edição: setas para alternar --- */}
+              
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -329,7 +329,7 @@ export default function ProfileModal({
                 </button>
               </div>
 
-              {/* --- Filtros rápidos (meninos/meninas/todos) --- */}
+              
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -366,7 +366,7 @@ export default function ProfileModal({
           )}
         </div>
 
-        {/* Form */}
+        
         <form
           className="mx-auto max-w-xl space-y-4"
           onSubmit={(e) => {
@@ -374,7 +374,7 @@ export default function ProfileModal({
             if (isEditing && !saving) onSave();
           }}
         >
-          {/* Nome */}
+          
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white">
               Nome:
@@ -391,7 +391,7 @@ export default function ProfileModal({
             />
           </div>
 
-          {/* Email */}
+          
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white">
               Email:
@@ -408,7 +408,7 @@ export default function ProfileModal({
             />
           </div>
 
-          {/* Aniversário */}
+          
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white">
               Aniversário:
@@ -447,7 +447,7 @@ export default function ProfileModal({
             </div>
           </div>
 
-          {/* Gênero */}
+          
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-white">
               Gênero:
@@ -487,7 +487,7 @@ export default function ProfileModal({
             </div>
           </div>
 
-          {/* Ações */}
+          
           {!isEditing ? (
             <div className="pt-2 grid place-items-center">
               <button
@@ -504,7 +504,7 @@ export default function ProfileModal({
               <button
                 type="button"
                 onClick={onCancel}
-                disabled={saving || disableClose /* impede sair da edição quando bloqueado */}
+                disabled={saving || disableClose }
                 className="rounded-full bg-white px-8 py-3 text-sm font-extrabold text-[#7a9456] shadow hover:opacity-95 disabled:opacity-60"
               >
                 CANCELAR

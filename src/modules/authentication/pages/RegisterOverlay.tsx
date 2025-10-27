@@ -1,4 +1,4 @@
-// src/modules/authentication/pages/RegisterOverlay.tsx
+
 import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
 import { Button } from "#/components/ui/button";
@@ -8,12 +8,12 @@ import WaveImg from "#/modules/authentication/assets/4 - Ondas.png";
 import WaveImg2 from "#/modules/authentication/assets/11 - Ondas2.png";
 import { register, toISODateFromBR, type Gender } from "#/modules/authentication/services/registerService";
 
-// Google
+
 import { GoogleLogin } from "@react-oauth/google";
 import type { CredentialResponse } from "@react-oauth/google";
 import { loginWithGoogle } from "#/modules/authentication/services/googleAuthService";
 
-// Toasts
+
 import { toast } from "react-toastify";
 import ErrorToast from "#/components/toasts/ErrorToast";
 import SuccessToast from "#/components/toasts/SuccessToast";
@@ -21,7 +21,7 @@ import SuccessToast from "#/components/toasts/SuccessToast";
 export default function RegisterOverlay() {
   const navigate = useNavigate();
 
-  // campos
+  
   const [showPwd, setShowPwd] = useState(false);
   const [birthDateBR, setBirthDateBR] = useState("");
   const [fullName, setFullName] = useState("");
@@ -30,11 +30,11 @@ export default function RegisterOverlay() {
   const [gender, setGender] = useState<Gender | "">("");
   const [genderOpen, setGenderOpen] = useState(false);
 
-  // controle
+  
   const [submitting, setSubmitting] = useState(false);
   const datePickerRef = useRef<HTMLInputElement | null>(null);
 
-  // máscara dd/mm/aaaa
+  
   function handleBirthInput(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
     let out = "";
@@ -89,7 +89,7 @@ export default function RegisterOverlay() {
     }
   }
 
-  // Google handlers
+  
   function handleGoogleSuccess(credentialResponse: CredentialResponse) {
     const idToken = credentialResponse.credential;
     if (!idToken) {
@@ -110,7 +110,7 @@ export default function RegisterOverlay() {
 
         toast(<SuccessToast title="Login com Google realizado!" description={description} />);
 
-        // Vai para o Guide passando o state que o GuidePage vai ler na montagem
+        
         navigate("/guide", {
           replace: true,
           state: { requireAdditionalData: insertAdditionalData },
@@ -137,7 +137,7 @@ export default function RegisterOverlay() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
-      {/* Fechar */}
+      
       <motion.button
         aria-label="Fechar"
         onClick={() => navigate("/")}
@@ -149,7 +149,7 @@ export default function RegisterOverlay() {
         <X className="h-5 w-5" />
       </motion.button>
 
-      {/* Entrar */}
+      
       <motion.div
         initial={{ y: -8, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -163,7 +163,7 @@ export default function RegisterOverlay() {
         </Button>
       </motion.div>
 
-      {/* Ondas decorativas */}
+      
       <img
         src={WaveImg}
         alt=""
@@ -177,7 +177,7 @@ export default function RegisterOverlay() {
         className="pointer-events-none absolute bottom-0 right-[-10%] w-[45%] max-w-none -scale-x-100 select-none opacity-95"
       />
 
-      {/* Conteúdo */}
+      
       <div className="mx-auto flex min-h-screen max-w-[1024px] flex-col items-center justify-center px-4">
         <motion.form
           onSubmit={handleSubmit}
@@ -188,7 +188,7 @@ export default function RegisterOverlay() {
         >
           <h1 className="mb-4 text-center text-lg font-semibold text-white">Crie o seu perfil</h1>
 
-          {/* Aniversário */}
+          
           <label className="mb-2 block text-xs font-semibold text-white/90">Aniversário</label>
           <div className="relative mb-3">
             <input
@@ -212,7 +212,7 @@ export default function RegisterOverlay() {
             <input ref={datePickerRef} type="date" className="sr-only" onChange={handlePickFromCalendar} />
           </div>
 
-          {/* Nome */}
+          
           <label className="mb-2 block text-xs font-semibold text-white/90">Nome</label>
           <input
             type="text"
@@ -223,7 +223,7 @@ export default function RegisterOverlay() {
             className="mb-3 w-full rounded-md bg-[#3d4a2c] px-3 py-2 text-sm text-white placeholder-white/60 outline-none ring-1 ring-black/10 focus:ring-white/20"
           />
 
-          {/* Email */}
+          
           <label className="mb-2 block text-xs font-semibold text-white/90">E-mail</label>
           <input
             type="email"
@@ -235,7 +235,7 @@ export default function RegisterOverlay() {
             className="mb-3 w-full rounded-md bg-[#3d4a2c] px-3 py-2 text-sm text-white placeholder-white/60 outline-none ring-1 ring-black/10 focus:ring-white/20"
           />
 
-          {/* Senha */}
+          
           <label className="mb-2 block text-xs font-semibold text-white/90">Senha</label>
           <div className="relative mb-3">
             <input
@@ -268,7 +268,7 @@ export default function RegisterOverlay() {
             </button>
           </div>
 
-          {/* Gênero */}
+          
           <label className="mb-2 block text-xs font-semibold text-white/90">Gênero</label>
           <div className="relative">
             <select
@@ -306,7 +306,7 @@ export default function RegisterOverlay() {
             </span>
           </div>
 
-          {/* Botão Criar Conta */}
+          
           <Button
             type="submit"
             disabled={submitting}
@@ -315,14 +315,14 @@ export default function RegisterOverlay() {
             {submitting ? "Criando..." : "CRIAR CONTA"}
           </Button>
 
-          {/* Divisor OU */}
+          
           <div className="my-4 flex items-center gap-3">
             <div className="h-px flex-1 bg-white/30" />
             <span className="select-none text-xs font-semibold text-white">OU</span>
             <div className="h-px flex-1 bg-white/30" />
           </div>
 
-          {/* Google */}
+          
           <div className="flex w-full justify-center">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
