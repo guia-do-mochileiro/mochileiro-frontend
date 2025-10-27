@@ -15,7 +15,7 @@ import PatentNavegador from "#/modules/guide/assets/patents/3 - Navegador.png";
 import PatentAventureiro from "#/modules/guide/assets/patents/4 - Aventureiro.png";
 import PatentViajante from "#/modules/guide/assets/patents/5 - Viajante.png";
 import PatentGuardiao from "#/modules/guide/assets/patents/6 - Guardião.png";
-import PatentLendario from "#/modules/guide/assets/patents/7 - Lendário.png";
+import PatentLendario from "#/modules/guide/assets/patents/7-lendario.png";
 
 
 import { fetchPatents, type PatentName, type PatentProgress } from "#/modules/guide/services/patentsService";

@@ -21,24 +21,24 @@ export default function LandingPage() {
   const navigate = useNavigate();
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-[#9db668] to-[#7a9456]">
-      
+
       <header className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-2">
           <img src={LogoImg} alt="Mochileiro - logo" className="h-10 w-10 rounded-full" />
           <span className="text-xl font-bold text-white">mochileiro</span>
         </div>
-      <Button
-        onClick={() => navigate("/login")}
-        className="rounded-full bg-[#3d4a2c] px-6 text-white hover:bg-[#2d3a1c]"
-      >
+        <Button
+          onClick={() => navigate("/login")}
+          className="rounded-full bg-[#3d4a2c] px-6 text-white hover:bg-[#2d3a1c]"
+        >
           Entrar
         </Button>
       </header>
 
-      
+
       <main className="flex flex-1 items-center">
         <div className="container mx-auto grid grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
-          
+
           <div className="relative flex flex-col gap-6">
             <h1 className="text-balance text-5xl font-extrabold leading-tight text-white lg:text-6xl">
               Pegue sua
@@ -50,7 +50,7 @@ export default function LandingPage() {
               explorar!
             </h1>
 
-            
+
             <img
               src={BackpackImg}
               alt="Mochila"
@@ -68,16 +68,16 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          
+
           <div className="relative flex min-h-[420px] items-end justify-end">
-            
+
             <img
               src={WaveImg}
               alt=""
               aria-hidden="true"
               className="pointer-events-none absolute bottom-0 right-0 w-[90%] max-w-[720px] select-none"
             />
-            
+
             <img
               src={PhonesImg}
               alt="Mockups com o jaguar e telas do app"
@@ -87,7 +87,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-      
+
       <section className="bg-white py-20">
         <div className="container mx-auto px-6">
           <div className="mb-20 grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -112,7 +112,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          
+
           <div className="grid grid-cols-1 items-center ml-[150px] gap-12 lg:grid-cols-2">
             <div className="flex flex-col gap-4 lg:order-1">
               <h2 className="text-balance text-4xl font-bold text-[#9db668] lg:text-5xl">
@@ -137,30 +137,42 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#9db668] to-[#7a9456] py-20">
-        
 
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#9db668] to-[#7a9456] py-20">
         <img
           src={SunImg}
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 left-0 z-0 w-[800px] max-w-none select-none opacity-90"
+          className="
+      pointer-events-none select-none opacity-90
+      absolute bottom-0 z-0 max-w-none
+      w-[980px] sm:w-[1080px] lg:w-[1200px]
+      /* posiciona o sol sob a coluna da esquerda, centralizado nela */
+      left-1/2 -translate-x-[58%]
+      sm:-translate-x-[56%]
+      lg:-translate-x-[53%]
+    "
         />
 
         <div className="container relative z-10 mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-            
-            <div className="relative flex justify-center">
-
+            <div className="relative min-h-[420px] lg:min-h-[520px]">
               <img
                 src={WhyImg}
                 alt="Por que aprender Geografia com o Mochileiro"
-                className="relative z-10 h-auto w-[400px] max-w-[520px] mr-[100px] object-contain"
+                className="
+            relative z-10 object-contain
+            mx-auto
+            w-[64%] max-w-[520px]
+            sm:w-[58%]
+            lg:w-[420px]
+            /* fino ajuste para casar o centro do celular ao centro do sol */
+            mt-[30px]
+            ml-[350px]
+          "
               />
             </div>
 
-            
             <div className="flex flex-col gap-6">
               <h2 className="text-balance text-center text-3xl font-bold text-white lg:text-left lg:text-4xl">
                 Por que aprender Geografia
@@ -168,7 +180,6 @@ export default function LandingPage() {
                 com o Mochileiro?
               </h2>
 
-              
               <div className="flex flex-col gap-4">
                 {[
                   {
@@ -195,27 +206,27 @@ export default function LandingPage() {
                   <div
                     key={title}
                     className="
-        group rounded-3xl bg-white p-6
-        transition-colors duration-200
-        hover:bg-[#5a6d47] focus-visible:bg-[#5a6d47] outline-none
-      "
+                group rounded-3xl bg-white p-6 outline-none
+                transition-colors duration-200
+                hover:bg-[#5a6d47] focus-visible:bg-[#5a6d47]
+              "
                     tabIndex={0}
                   >
                     <h3
                       className="
-          mb-2 text-center text-xl font-bold
-          text-[#5a6d47] transition-colors duration-200
-          group-hover:text-white group-focus-visible:text-white
-        "
+                  mb-2 text-center text-xl font-bold
+                  text-[#5a6d47] transition-colors duration-200
+                  group-hover:text-white group-focus-visible:text-white
+                "
                     >
                       {title}
                     </h3>
                     <p
                       className="
-          text-center text-sm leading-relaxed
-          text-[#5a6d47]/90 transition-colors duration-200
-          group-hover:text-white/90 group-focus-visible:text-white/90
-        "
+                  text-center text-sm leading-relaxed
+                  text-[#5a6d47]/90 transition-colors duration-200
+                  group-hover:text-white/90 group-focus-visible:text-white/90
+                "
                     >
                       {desc}
                     </p>
@@ -223,8 +234,7 @@ export default function LandingPage() {
                 ))}
               </div>
 
-
-              <div className="flex justify-center">
+              <div className="flex justify-center lg:justify-start">
                 <Button className="rounded-full bg-[#3d4a2c] px-8 py-6 text-lg text-white hover:bg-[#2d3a1c]">
                   Pegar Mochila
                 </Button>
@@ -234,8 +244,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-
-      
       <section className="bg-white py-20">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
@@ -263,7 +271,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
+
       <footer className="bg-[#5a6d47] py-12">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
