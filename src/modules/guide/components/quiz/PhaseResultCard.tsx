@@ -1,9 +1,24 @@
 // src/modules/guide/components/quiz/PhaseResultCard.tsx
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Menu as MenuIcon } from "lucide-react";
 
-// Fundo de confetes + ícone de patente (fixo por enquanto)
+// 🎵 SFX
+import { useSfx } from "#/hooks/useSfx";
+
+// Fundo de confetes
 import PatentBackdrop from "#/modules/guide/assets/patents/0 - back.png";
-import PatentIcon from "#/modules/guide/assets/patents/1 - Pioneiro.png";
+
+// Patentes (1..7)
+import PatentPioneiro from "#/modules/guide/assets/patents/1 - Pioneiro.png";
+import PatentExplorador from "#/modules/guide/assets/patents/2 - Explorador.png";
+import PatentNavegador from "#/modules/guide/assets/patents/3 - Navegador.png";
+import PatentAventureiro from "#/modules/guide/assets/patents/4 - Aventureiro.png";
+import PatentViajante from "#/modules/guide/assets/patents/5 - Viajante.png";
+import PatentGuardiao from "#/modules/guide/assets/patents/6 - Guardião.png";
+import PatentLendario from "#/modules/guide/assets/patents/7 - Lendário.png";
+
+// Service para buscar as patentes do usuário
+import { fetchPatents, type PatentName, type PatentProgress } from "#/modules/guide/services/patentsService";
 
 type Props = {
   passed: boolean;
@@ -17,9 +32,31 @@ type Props = {
   onMenu?: () => void;
   onNext?: () => void;
 
-  /** permitir trocar o ícone da patente no futuro */
+  /** permitir trocar o ícone da patente via prop (tem prioridade sobre o fetch) */
   patentIconSrc?: string;
 };
+
+// Mapa de nome -> imagem
+const PATENT_ICON_MAP: Record<PatentName, string> = {
+  PIONEIRO: PatentPioneiro,
+  EXPLORADOR: PatentExplorador,
+  NAVEGADOR: PatentNavegador,
+  AVENTUREIRO: PatentAventureiro,
+  VIAJANTE: PatentViajante,
+  "GUARDIÃO": PatentGuardiao,
+  "LENDÁRIO": PatentLendario,
+};
+
+// Ordem oficial (igual a do backend, do menor para o maior)
+const ORDERED_NAMES: PatentName[] = [
+  "PIONEIRO",
+  "EXPLORADOR",
+  "NAVEGADOR",
+  "AVENTUREIRO",
+  "VIAJANTE",
+  "GUARDIÃO",
+  "LENDÁRIO",
+];
 
 export default function PhaseResultCard({
   passed,
@@ -28,12 +65,70 @@ export default function PhaseResultCard({
   onNext,
   patentIconSrc,
 }: Props) {
+  const { playClick } = useSfx(); // usamos o padrão do hook (geral do app)
+
+  const [autoIcon, setAutoIcon] = useState<string | null>(null);
+  const effectiveIcon = useMemo(() => patentIconSrc ?? autoIcon ?? PatentPioneiro, [patentIconSrc, autoIcon]);
+
+  // Busca a patente mais alta desbloqueada se não vier via prop
+  useEffect(() => {
+    if (patentIconSrc) return; // prioridade para a prop
+    let mounted = true;
+
+    (async () => {
+      try {
+        const list = await fetchPatents(); // já vem na ordem correta (menor -> maior)
+        const highest = resolveHighestUnlocked(list);
+        const icon = highest ? PATENT_ICON_MAP[highest as PatentName] ?? PatentPioneiro : PatentPioneiro;
+        if (mounted) setAutoIcon(icon);
+      } catch {
+        if (mounted) setAutoIcon(PatentPioneiro);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [patentIconSrc]);
+
+  function resolveHighestUnlocked(list: PatentProgress[]): PatentName | null {
+    if (!Array.isArray(list) || list.length === 0) return null;
+
+    // O backend já entrega na ordem; para garantir, percorremos de trás pra frente.
+    for (let i = list.length - 1; i >= 0; i--) {
+      const p = list[i];
+      if (p?.unlocked) {
+        // tenta casar exatamente com nossos nomes conhecidos
+        const name = (p.name || "").toUpperCase() as PatentName;
+        if (ORDERED_NAMES.includes(name)) return name;
+        break;
+      }
+    }
+
+    // fallback: checa por requiredPoints maior entre unlocked
+    const unlocked = list.filter((p) => p.unlocked);
+    if (unlocked.length) {
+      const top = unlocked.reduce((acc, cur) =>
+        cur.requiredPoints > acc.requiredPoints ? cur : acc
+      );
+      const name = (top.name || "").toUpperCase() as PatentName;
+      return ORDERED_NAMES.includes(name) ? name : "PIONEIRO";
+    }
+
+    return "PIONEIRO";
+  }
+
+  const handleMenu = () => {
+    playClick();
+    onMenu?.();
+  };
+  const handleNext = () => {
+    playClick();
+    onNext?.();
+  };
+
   return (
     <div className="mx-auto w-full max-w-3xl rounded-2xl border border-[#dcd7a8] bg-[#FFFDEB] p-6 sm:p-8 text-center shadow">
-      {/* Título */}
-
-
-
       {/* Patente grande com fundo de confetes */}
       <div className="relative mx-auto h-[220px] w-[220px] sm:h-[260px] sm:w-[260px]">
         <img
@@ -44,47 +139,29 @@ export default function PhaseResultCard({
           draggable={false}
         />
         <img
-          src={patentIconSrc ?? PatentIcon}
+          src={effectiveIcon}
           alt="Patente conquistada"
           className="absolute left-1/2 top-1/2 h-[68%] w-[68%] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow"
           draggable={false}
           style={{ filter: "drop-shadow(0 10px 0 rgba(0,0,0,.10))" }}
         />
       </div>
-            <h3 className="flex items-center justify-center gap-2 text-3xl sm:text-4xl font-extrabold text-[#69521a]">
-        {/* <Trophy className="h-8 w-8 shrink-0 text-[#8aa33f]" aria-hidden /> */}
+
+      <h3 className="flex items-center justify-center gap-2 text-3xl sm:text-4xl font-extrabold text-[#69521a]">
         {passed ? "Parabéns!" : "Fase concluída"}
       </h3>
-            <p className="mt-2 text-base sm:text-lg font-semibold text-[#7a6a32]">
+
+      <p className="mt-2 text-base sm:text-lg font-semibold text-[#7a6a32]">
         {passed
           ? `Você concluiu a fase${phaseName ? ` ${phaseName}` : ""}!`
           : `Você completou a fase${phaseName ? ` ${phaseName}` : ""}.`}
       </p>
 
-      {/* {(correct != null || wrong != null) && (
-        <div className="mt-5 flex flex-wrap justify-center gap-3 text-[#5b4d1e]">
-          {correct != null && (
-            <div className="inline-flex items-center gap-2 rounded-xl bg-[#eaf3d9] px-4 py-2 ring-1 ring-[#cfe3a2]">
-              <CheckCircle className="h-5 w-5 text-[#6aa14f]" aria-hidden />
-              <span className="font-semibold">Corretas:</span>
-              <b className="tabular-nums">{correct}</b>
-            </div>
-          )}
-          {wrong != null && (
-            <div className="inline-flex items-center gap-2 rounded-xl bg-[#ffe9ea] px-4 py-2 ring-1 ring-[#ffd1d6]">
-              <XCircle className="h-5 w-5 text-[#c65656]" aria-hidden />
-              <span className="font-semibold">Erradas:</span>
-              <b className="tabular-nums">{wrong}</b>
-            </div>
-          )}
-        </div>
-      )} */}
-
-      {/* Ações: apenas MENU e PRÓXIMA FASE */}
+      {/* Ações: MENU e PRÓXIMA FASE */}
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <button
           type="button"
-          onClick={onMenu}
+          onClick={handleMenu}
           className="inline-flex min-w-[190px] items-center justify-center gap-2 rounded-full bg-white px-6 py-3 font-extrabold text-[#7a9456] ring-2 ring-[#cfe3a2] transition hover:bg-[#f7ffe9]"
         >
           <MenuIcon className="h-5 w-5" aria-hidden />
@@ -93,7 +170,7 @@ export default function PhaseResultCard({
 
         <button
           type="button"
-          onClick={onNext}
+          onClick={handleNext}
           className="inline-flex min-w-[190px] items-center justify-center gap-2 rounded-full bg-[#8aa33f] px-6 py-3 font-extrabold text-white transition hover:brightness-105"
         >
           PRÓXIMA FASE

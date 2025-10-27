@@ -3,18 +3,15 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { X } from "lucide-react";
 import { logout } from "#/utils/auth";
 import ProfileModal from "./ProfileModal";
+import { useSfx } from "#/hooks/useSfx";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onProfile?: () => void;
   anchorEl?: HTMLElement | null;
-
-  /** NOVO: começar já na confirmação (útil para o botão Voltar do quiz) */
   initialPhase?: "menu" | "confirm";
-  /** NOVO: título customizável da confirmação */
   confirmTitle?: string;
-  /** NOVO: ação ao confirmar; fallback = logout() */
   onConfirm?: () => void;
 };
 
@@ -30,12 +27,13 @@ export default function GuideMenuModal({
   const [phase, setPhase] = useState<"menu" | "confirm">(initialPhase);
   const [showProfile, setShowProfile] = useState(false);
 
+  const { playClick } = useSfx({ volume: 0.8, clickVolume: 1 });
+
   useEffect(() => {
     if (!open) {
       setPhase(initialPhase);
       setShowProfile(false);
     } else {
-      // se o consumidor abrir já pedindo confirmação, respeita
       setPhase(initialPhase);
     }
   }, [open, initialPhase]);
@@ -66,7 +64,7 @@ export default function GuideMenuModal({
 
   if (!open) return null;
 
-  // Popover de menu (só aparece se initialPhase === "menu" e tiver anchor)
+  // Popover de menu (quando há âncora e phase === "menu")
   if (phase === "menu" && pos) {
     return (
       <>
@@ -80,6 +78,7 @@ export default function GuideMenuModal({
           <button
             role="menuitem"
             onClick={() => {
+              playClick();
               setShowProfile(true);
               onProfile?.();
             }}
@@ -90,7 +89,10 @@ export default function GuideMenuModal({
 
           <button
             role="menuitem"
-            onClick={() => setPhase("confirm")}
+            onClick={() => {
+              playClick();
+              setPhase("confirm");
+            }}
             className="mt-2 w-full rounded-xl bg-white px-4 py-3 text-center font-extrabold text-[#9db668] hover:bg-white/95"
           >
             SAIR
@@ -113,7 +115,10 @@ export default function GuideMenuModal({
         <button
           type="button"
           aria-label="Fechar"
-          onClick={onClose}
+          onClick={() => {
+            playClick();
+            onClose();
+          }}
           className="absolute right-4 top-4 rounded-full p-1 text-white/95 hover:opacity-90"
         >
           <X size={28} />
@@ -127,30 +132,29 @@ export default function GuideMenuModal({
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <button
               type="button"
-              onClick={() => (onConfirm ? onConfirm() : logout())}
+              onClick={() => {
+                playClick();
+                onConfirm ? onConfirm() : logout();
+              }}
               className="w-full rounded-[32px] bg-white px-6 py-6 text-center text-2xl font-extrabold text-[#7a9456] shadow hover:opacity-95"
             >
               SIM
             </button>
 
-
-
-<button
-  type="button"
-  onClick={() => {
-    // Se abrimos direto em "confirm" ou não há ancora para mostrar o menu,
-    // simplesmente fecha. Caso contrário, volta para o popover de menu.
-    if (!anchorEl || initialPhase === "confirm") {
-      onClose();
-    } else {
-      setPhase("menu");
-    }
-  }}
-  className="w-full rounded-[32px] bg-white px-6 py-6 text-center text-2xl font-extrabold text-[#7a9456] shadow hover:opacity-95"
->
-  NÃO
-</button>
-
+            <button
+              type="button"
+              onClick={() => {
+                playClick();
+                if (!anchorEl || initialPhase === "confirm") {
+                  onClose();
+                } else {
+                  setPhase("menu");
+                }
+              }}
+              className="w-full rounded-[32px] bg-white px-6 py-6 text-center text-2xl font-extrabold text-[#7a9456] shadow hover:opacity-95"
+            >
+              NÃO
+            </button>
           </div>
         </div>
       </div>

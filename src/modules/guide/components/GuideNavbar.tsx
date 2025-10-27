@@ -12,6 +12,9 @@ import GuideMenuModal from "#/modules/guide/components/GuideMenuModal";
 // ✅ pega dados do usuário (inclui avatar)
 import { fetchMe } from "#/modules/guide/services/profile/userService";
 
+// 🔊 sons
+import { useSfx } from "#/hooks/useSfx";
+
 // Avatares (mesmo padrão do ProfileModal/Ranking)
 import Avatar1 from "#/modules/guide/assets/avatars/Avatar1.png";
 import Avatar2 from "#/modules/guide/assets/avatars/Avatar2.png";
@@ -68,6 +71,9 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
   const [avatarKey, setAvatarKey] = useState<string | null>(null);
   const [loadingMe, setLoadingMe] = useState<boolean>(false);
 
+  // 🔊 hook de efeitos sonoros
+  const { playClick } = useSfx({ volume: 0.9, clickVolume: 1 });
+
   // carrega o "me" uma vez
   useEffect(() => {
     let mounted = true;
@@ -104,6 +110,7 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
                   <NavLink
                     key={t.key}
                     to={t.to}
+                    onClick={playClick} // 🔊 som ao trocar de guia
                     className={[
                       "flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold transition",
                       isActive ? "bg-[#7a9456] text-white shadow" : " text-[#9db668]",
@@ -122,6 +129,7 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
                 ref={menuBtnRef}
                 type="button"
                 onClick={() => {
+                  playClick();         // 🔊 hamburger
                   onMenuClick?.();
                   setMenuOpen(true);
                 }}
@@ -134,12 +142,14 @@ export default function GuideNavbar({ active, onMenuClick, onAvatarClick, userNa
               {/* ✅ Botão do avatar do usuário */}
               <button
                 type="button"
-                onClick={onAvatarClick}
+                onClick={() => {
+                  playClick();         // 🔊 perfil
+                  onAvatarClick?.();
+                }}
                 aria-label={ariaAvatar}
                 title={meName ?? "Perfil"}
                 className="grid h-10 w-10 place-items-center overflow-hidden rounded-full ring-2 ring-[#9db668] bg-white"
               >
-                {/* se já temos avatar, exibe a imagem; caso contrário, fallback */}
                 {avatarSrc && !loadingMe ? (
                   <img
                     src={avatarSrc}

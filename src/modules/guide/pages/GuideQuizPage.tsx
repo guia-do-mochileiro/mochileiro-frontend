@@ -7,6 +7,7 @@ import AnswerButton from "#/modules/guide/components/quiz/AnswerButton";
 import QuizFooter from "#/modules/guide/components/quiz/QuizFooter";
 import PhaseResultCard from "#/modules/guide/components/quiz/PhaseResultCard";
 import GuideMenuModal from "#/modules/guide/components/GuideMenuModal";
+import { useSfx } from "#/hooks/useSfx";
 
 import OverallProgressCard from "#/components/OverallProgressCard";
 import TipCard from "#/components/TipCard";
@@ -74,6 +75,7 @@ type PhaseProgress = {
 
 export default function GuideQuizPage() {
   const navigate = useNavigate();
+  const { playAchievement, playCorrect, playWrong, playFinish } = useSfx();
   const { missionId, stateCode } = useParams<{ missionId: string; stateCode: string }>();
   const location = useLocation();
   const locState = (location.state || {}) as LocationState;
@@ -202,6 +204,15 @@ export default function GuideQuizPage() {
     };
   }, [missionId]);
 
+  useEffect(() => {
+  if (finished) {
+    // 🔊 Final de fase (tocar sempre ao finalizar; se quiser apenas quando "passed", troque por: if (progressState?.passed))
+    playFinish();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [finished]);
+
+
   // Ações
   const handleSelect = (altId: string) => {
     if (mode !== "answering" || finished || showWrongIntro) return;
@@ -212,32 +223,39 @@ export default function GuideQuizPage() {
     if (!currentQuestion || !selectedAltId || finished || showWrongIntro) return;
     try {
       const res = await submitAnswer({
-        questionId: currentQuestion.id,
-        selectedAlternativeId: selectedAltId,
-      });
+  questionId: currentQuestion.id,
+  selectedAlternativeId: selectedAltId,
+});
 
-      if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
-        res.unlockedAchievements.forEach((achName) => {
-          const iconUrl = resolveAchievementIcon(achName, ImgCenter);
-          toast(
-            <SuccessToast
-              title="Parabéns!"
-              description={`Você desbloqueou a conquista "${achName}"`}
-              iconSrc={iconUrl}
-            />
-          );
-        });
-      }
+// 🔊 Conquistas — um som por conquista (ou trocamos por 1x se preferir)
+if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
+  res.unlockedAchievements.forEach((achName) => {
+    playAchievement();
+    const iconUrl = resolveAchievementIcon(achName, ImgCenter);
+    toast(
+      <SuccessToast
+        title="Parabéns!"
+        description={`Você desbloqueou a conquista "${achName}"`}
+        iconSrc={iconUrl}
+      />
+    );
+  });
+}
 
-      const ok = Boolean(res.correct);
-      setIsCorrect(ok);
-      setMode("feedback");
-      setMascot(ok ? "happy" : "sad");
+const ok = Boolean(res.correct);
+setIsCorrect(ok);
+setMode("feedback");
+setMascot(ok ? "happy" : "sad");
 
-      // Guarda no set de erradas desta sessão
-      if (!ok && currentQuestion) {
-        wrongIdsSessionRef.current.add(currentQuestion.id);
-      }
+// 🔊 Feedback resposta
+if (ok) playCorrect();
+else     playWrong();
+
+// Guarda no set de erradas desta sessão
+if (!ok && currentQuestion) {
+  wrongIdsSessionRef.current.add(currentQuestion.id);
+}
+
     } catch (e) {
       console.error(e);
     }
