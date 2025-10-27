@@ -13,7 +13,7 @@ import Navegador from "#/modules/guide/assets/patents/3 - Navegador.png";
 import Aventureiro from "#/modules/guide/assets/patents/4 - Aventureiro.png";
 import Viajante from "#/modules/guide/assets/patents/5 - Viajante.png";
 import Guardiao from "#/modules/guide/assets/patents/6 - Guardião.png";
-import Lendario from "#/modules/guide/assets/patents/7 - lendário.png";
+import Lendario from "#/modules/guide/assets/patents/7-lendario.png";
 
 import {
   fetchPatents,
