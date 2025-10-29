@@ -26,6 +26,11 @@ import ThinkImg from "#/modules/guide/assets/quiz/1 - think.png";
 import SadImg from "#/modules/guide/assets/quiz/2 - sad.png";
 import HappyImg from "#/modules/guide/assets/quiz/3 - happy.png";
 import ImgCenter from "#/modules/guide/assets/quiz/4 - ImgCenter.png";
+import ImgLocalizacao from "#/modules/guide/assets/Localização e Capital.png";
+import ImgHidrografia from "#/modules/guide/assets/Hidrografia e Bioma.png";
+import ImgCultura from "#/modules/guide/assets/Cultura e Sociedade.png";
+import ImgEconomia from "#/modules/guide/assets/Economia e Desafios.png";
+
 
 import Phase1Icon from "#/modules/guide/assets/phases/1.png";
 import Phase2Icon from "#/modules/guide/assets/phases/2.png";
@@ -75,6 +80,7 @@ type PhaseProgress = {
 
 export default function GuideQuizPage() {
   const navigate = useNavigate();
+  const [quizName, setQuizName] = useState<string | null>(null);
   const { playAchievement, playCorrect, playWrong, playFinish } = useSfx();
   const { missionId, stateCode } = useParams<{ missionId: string; stateCode: string }>();
   const location = useLocation();
@@ -95,7 +101,22 @@ export default function GuideQuizPage() {
     };
   }, [locState]);
 
-  
+  const norm = (s: string) =>
+    s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().trim();
+
+  const quizImageByName = useMemo(() => {
+    const map: Record<string, string> = {
+      [norm("Localização e Capital")]: ImgLocalizacao,
+      [norm("Hidrografia e Bioma")]: ImgHidrografia,
+      [norm("Cultura e Sociedade")]: ImgCultura,
+      [norm("Economia e Desafios")]: ImgEconomia,
+    };
+
+    if (!quizName) return ImgCenter;
+    return map[norm(quizName)] ?? ImgCenter;
+  }, [quizName]);
+
+
   const [loading, setLoading] = useState(true);
   const [queue, setQueue] = useState<number[]>([]);
   const [qIndex, setQIndex] = useState<number>(0);
@@ -110,11 +131,11 @@ export default function GuideQuizPage() {
   const [progressState, setProgressState] = useState<PhaseProgress | null>(null);
   const [finished, setFinished] = useState(false);
 
-  
+
   const [showWrongIntro, setShowWrongIntro] = useState(false);
-  const wrongIntroShownRef = useRef(false); 
-  const initialWrongSetRef = useRef<Set<string>>(new Set()); 
-  const wrongIdsSessionRef = useRef<Set<string>>(new Set()); 
+  const wrongIntroShownRef = useRef(false);
+  const initialWrongSetRef = useRef<Set<string>>(new Set());
+  const wrongIdsSessionRef = useRef<Set<string>>(new Set());
 
   const currentQuestion = useMemo(() => {
     if (!questions.length || !queue.length) return null;
@@ -122,7 +143,7 @@ export default function GuideQuizPage() {
     return questions[absoluteIndex] ?? null;
   }, [questions, queue, qIndex]);
 
-  
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -149,8 +170,9 @@ export default function GuideQuizPage() {
         setProgressState(pg);
 
         setQuestions(quiz.questions || []);
+        setQuizName(quiz.name ?? null);
 
-        
+
         const total = quiz.questions?.length ?? 0;
         const allIdx = Array.from({ length: total }, (_, i) => i);
         const correctSet = new Set<string>(pg.correctQuestionIds);
@@ -164,7 +186,7 @@ export default function GuideQuizPage() {
         const previouslyWrong = pendingIdx.filter((i) => wrongSet.has(quiz.questions[i].id));
         const ordered = [...notTried, ...previouslyWrong];
 
-        const wrongIntroNeeded = !pg.completed && !pg.passed; 
+        const wrongIntroNeeded = !pg.completed && !pg.passed;
 
         if (pg.completed || ordered.length === 0) {
           setQueue([]);
@@ -174,7 +196,7 @@ export default function GuideQuizPage() {
           setQueue(ordered);
           setFinished(false);
 
-          
+
           if (
             wrongIntroNeeded &&
             previouslyWrong.length > 0 &&
@@ -205,15 +227,15 @@ export default function GuideQuizPage() {
   }, [missionId]);
 
   useEffect(() => {
-  if (finished) {
-    
-    playFinish();
-  }
-  
-}, [finished]);
+    if (finished) {
+
+      playFinish();
+    }
+
+  }, [finished]);
 
 
-  
+
   const handleSelect = (altId: string) => {
     if (mode !== "answering" || finished || showWrongIntro) return;
     setSelectedAltId(altId);
@@ -223,45 +245,45 @@ export default function GuideQuizPage() {
     if (!currentQuestion || !selectedAltId || finished || showWrongIntro) return;
     try {
       const res = await submitAnswer({
-  questionId: currentQuestion.id,
-  selectedAlternativeId: selectedAltId,
-});
+        questionId: currentQuestion.id,
+        selectedAlternativeId: selectedAltId,
+      });
 
 
-if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
-  res.unlockedAchievements.forEach((achName) => {
-    playAchievement();
-    const iconUrl = resolveAchievementIcon(achName, ImgCenter);
-    toast(
-      <SuccessToast
-        title="Parabéns!"
-        description={`Você desbloqueou a conquista "${achName}"`}
-        iconSrc={iconUrl}
-      />
-    );
-  });
-}
+      if (Array.isArray(res.unlockedAchievements) && res.unlockedAchievements.length) {
+        res.unlockedAchievements.forEach((achName) => {
+          playAchievement();
+          const iconUrl = resolveAchievementIcon(achName, ImgCenter);
+          toast(
+            <SuccessToast
+              title="Parabéns!"
+              description={`Você desbloqueou a conquista "${achName}"`}
+              iconSrc={iconUrl}
+            />
+          );
+        });
+      }
 
-const ok = Boolean(res.correct);
-setIsCorrect(ok);
-setMode("feedback");
-setMascot(ok ? "happy" : "sad");
-
-
-if (ok) playCorrect();
-else     playWrong();
+      const ok = Boolean(res.correct);
+      setIsCorrect(ok);
+      setMode("feedback");
+      setMascot(ok ? "happy" : "sad");
 
 
-if (!ok && currentQuestion) {
-  wrongIdsSessionRef.current.add(currentQuestion.id);
-}
+      if (ok) playCorrect();
+      else playWrong();
+
+
+      if (!ok && currentQuestion) {
+        wrongIdsSessionRef.current.add(currentQuestion.id);
+      }
 
     } catch (e) {
       console.error(e);
     }
   };
 
-  
+
   const refetchProgressForResult = async () => {
     if (!missionId) return;
     try {
@@ -283,12 +305,12 @@ if (!ok && currentQuestion) {
     }
   };
 
-  
+
   const goNextQuestion = () => {
     if (finished) return;
     if (!queue.length) return;
 
-    
+
     if (isCorrect) {
       setProgressState((prev) =>
         prev
@@ -314,7 +336,7 @@ if (!ok && currentQuestion) {
       } else {
         const nextIdx = Math.min(qIndex, nextQueue.length - 1);
 
-        
+
         const wrongIntroNeeded = !(progressState?.completed || progressState?.passed);
         if (wrongIntroNeeded && !wrongIntroShownRef.current) {
           const nextId = questions[nextQueue[nextIdx]]?.id;
@@ -355,7 +377,7 @@ if (!ok && currentQuestion) {
       const next = [...rest, absolute];
       const nextIdx = Math.min(qIndex, next.length - 1);
 
-      
+
       const wrongIntroNeeded = !(progressState?.completed || progressState?.passed);
       const nextId = questions[next[nextIdx]]?.id;
       if (
@@ -450,7 +472,7 @@ if (!ok && currentQuestion) {
               />
             </div>
           ) : showWrongIntro ? (
-            
+
             <div className="flex flex-1 items-center justify-center">
               <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-[#FFFDEB] p-8 text-center shadow">
                 <h3 className="mb-2 text-2xl font-extrabold text-[#69521a]">
@@ -484,7 +506,7 @@ if (!ok && currentQuestion) {
                 </div>
 
                 <div className="mb-8 grid place-items-center">
-                  <img src={ImgCenter} alt="" className="h-64 w-auto sm:h-72 md:h-80" />
+                  <img src={quizImageByName} alt="" className="h-64 w-auto sm:h-72 md:h-80" />
                 </div>
 
                 <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2">
