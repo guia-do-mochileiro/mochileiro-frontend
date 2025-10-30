@@ -11,7 +11,10 @@ export type RankedUser = {
   gender: "MASCULINO" | "FEMININO" | "OUTRO" | string;
   avatar: AvatarKey | string;
   totalPoints: number;
+  rankPosition?: number;
 };
+
+
 
 export type RankingPage = {
   content: RankedUser[];

@@ -5,23 +5,23 @@ import { getRanking, type RankingPage } from "#/modules/guide/services/rankingSe
 import { fetchMe } from "#/modules/guide/services/profile/userService";
 
 export default function GuideRankingPage() {
-  const [page, setPage] = useState(0); 
+  const [page, setPage] = useState(0);
   const [data, setData] = useState<RankingPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [meId, setMeId] = useState<string | null>(null);
 
-  
+
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 350);
     return () => clearTimeout(t);
   }, [search]);
 
-  
+
   useEffect(() => {
     setPage(0);
   }, [debouncedSearch]);
@@ -45,10 +45,10 @@ export default function GuideRankingPage() {
 
   useEffect(() => {
     fetchAll(page, debouncedSearch);
-    
+
   }, [page, debouncedSearch]);
 
-  
+
   const filteredContent = useMemo(() => {
     const list = data?.content ?? [];
     if (!debouncedSearch) return list;
@@ -112,13 +112,16 @@ export default function GuideRankingPage() {
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredContent.map((u, idx) => {
-                
-                const globalPosition = (data?.number ?? 0) * (data?.size ?? 9) + (idx + 1);
+                const position =
+                  u.rankPosition ??
+                  ((data?.number ?? 0) * (data?.size ?? 9) + (idx + 1));
+
                 const highlight = meId && u.userId === meId;
+
                 return (
                   <RankingCard
-                    key={`${u.userId}-${globalPosition}`}
-                    position={globalPosition}
+                    key={`${u.userId}-${position}`}
+                    position={position}
                     username={u.username}
                     points={u.totalPoints}
                     avatarKey={u.avatar}

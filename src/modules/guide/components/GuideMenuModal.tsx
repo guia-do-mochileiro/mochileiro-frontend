@@ -1,4 +1,3 @@
-
 import { useEffect, useLayoutEffect, useState } from "react";
 import { X } from "lucide-react";
 import { logout } from "#/utils/auth";
@@ -38,7 +37,6 @@ export default function GuideMenuModal({
     }
   }, [open, initialPhase]);
 
-  
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const width = 220;
 
@@ -64,7 +62,6 @@ export default function GuideMenuModal({
 
   if (!open) return null;
 
-  
   if (phase === "menu" && pos) {
     return (
       <>
@@ -87,6 +84,22 @@ export default function GuideMenuModal({
             PERFIL
           </button>
 
+          {/* NOVO BOTÃO: AVALIAR */}
+          <button
+            role="menuitem"
+            onClick={() => {
+              playClick();
+              window.open(
+                "https://forms.gle/qtn7byCnymUdVvJF6",
+                "_blank",
+                "noopener,noreferrer"
+              );
+            }}
+            className="mt-2 w-full rounded-xl bg-white px-4 py-3 text-center font-extrabold text-[#9db668] hover:bg-white/95"
+          >
+            AVALIAR
+          </button>
+
           <button
             role="menuitem"
             onClick={() => {
@@ -104,7 +117,6 @@ export default function GuideMenuModal({
     );
   }
 
-  
   return (
     <div
       className="fixed inset-0 z-[100] grid place-items-center bg-black/50 backdrop-blur-[1px] p-4"
